@@ -11,18 +11,18 @@ const AVATAR_STORAGE_KEY = 'corria-avatar-color';
 
 // ─── Definición de items de navegación ───────────────────────────────────────
 const NAV_ITEMS = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/upload',    icon: Upload,          label: 'Subir medición' },
-  { path: '/galeria',      icon: LayoutGrid,   label: 'Galería' },
-  { path: '/deteccion-ia', icon: Search,        label: 'Detección IA' },
+  { path: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/upload',       icon: Upload,          label: 'Subir medición', roles: ['admin', 'tecnico'] },
+  { path: '/galeria',      icon: LayoutGrid,      label: 'Galería' },
+  { path: '/deteccion-ia', icon: Search,          label: 'Detección IA',   roles: ['admin', 'tecnico'] },
   { divider: true },
-  { path: '/reportes',  icon: FileText,        label: 'Reportes' },
+  { path: '/reportes',     icon: FileText,        label: 'Reportes' },
   { divider: true },
-  { path: '/plantas',   icon: Factory,         label: 'Plantas',   roles: ['admin', 'tecnico'] },
-  { path: '/usuarios',  icon: Users,           label: 'Usuarios',  roles: ['admin'] },
+  { path: '/plantas',      icon: Factory,         label: 'Plantas',        roles: ['admin', 'tecnico'] },
+  { path: '/usuarios',     icon: Users,           label: 'Usuarios',       roles: ['admin'] },
   { divider: true },
-  { path: '/perfil',    icon: User,            label: 'Mi perfil' },
-  { path: '/configuracion', icon: Settings,    label: 'Configuración' },
+  { path: '/perfil',       icon: User,            label: 'Mi perfil' },
+  { path: '/configuracion', icon: Settings,       label: 'Configuración',  roles: ['admin'] },
 ];
 
 // Iniciales del usuario para el avatar

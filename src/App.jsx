@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { RefreshKeyProvider } from './hooks/RefreshKeyContext';
 import ProtectedRoute from './auth/ProtectedRoute';
+import RoleRoute from './auth/RoleRoute';
 import AppLayout from './layouts/AppLayout';
 
 // Páginas
@@ -35,16 +36,27 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/dashboard"    element={<DashboardPage />} />
-              <Route path="/upload"       element={<UploadPage />} />
-              <Route path="/galeria"      element={<GaleriaPage />} />
+              <Route path="/dashboard"          element={<DashboardPage />} />
+              <Route path="/galeria"            element={<GaleriaPage />} />
               <Route path="/galeria/:idMedicion" element={<MedicionDetailPage />} />
-              <Route path="/reportes"     element={<ReportsPage />} />
-              <Route path="/plantas"      element={<PlantsPage />} />
-              <Route path="/usuarios"     element={<UsersPage />} />
-              <Route path="/perfil"       element={<ProfilePage />} />
-              <Route path="/configuracion" element={<PlaceholderPage titulo="Configuración" />} />
-              <Route path="/deteccion-ia"  element={<DeteccionIAPage />} />
+              <Route path="/reportes"           element={<ReportsPage />} />
+              <Route path="/perfil"             element={<ProfilePage />} />
+
+              <Route path="/upload" element={
+                <RoleRoute roles={['admin', 'tecnico']}><UploadPage /></RoleRoute>
+              } />
+              <Route path="/deteccion-ia" element={
+                <RoleRoute roles={['admin', 'tecnico']}><DeteccionIAPage /></RoleRoute>
+              } />
+              <Route path="/plantas" element={
+                <RoleRoute roles={['admin', 'tecnico']}><PlantsPage /></RoleRoute>
+              } />
+              <Route path="/usuarios" element={
+                <RoleRoute roles={['admin']}><UsersPage /></RoleRoute>
+              } />
+              <Route path="/configuracion" element={
+                <RoleRoute roles={['admin']}><PlaceholderPage titulo="Configuración" /></RoleRoute>
+              } />
             </Route>
 
             {/* / y cualquier ruta desconocida redirigen al dashboard */}
