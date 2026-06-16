@@ -251,7 +251,10 @@ function ColaboradorForm({ onSubmit, saving, error }) {
         <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
           Contraseña *
         </label>
-        <input required type="password" value={form.password} onChange={set('password')} placeholder="Mín. 8 caracteres" style={inputStyle} />
+        <input required type="password" value={form.password} onChange={set('password')} placeholder="ej: Admin1507!" style={inputStyle} />
+        <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>
+          Debe tener mayúscula, minúscula, número y símbolo (ej: <code>Admin1507!</code>)
+        </div>
       </div>
       <div style={{ marginBottom: 18 }}>
         <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
