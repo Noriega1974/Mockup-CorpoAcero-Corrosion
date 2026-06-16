@@ -185,18 +185,12 @@ export default function DeteccionIAPage() {
           {/* Imagen con segmentación */}
           <div style={{ background: 'var(--bg-card)', borderRadius: 10, padding: 12, marginBottom: 16 }}>
             <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600, letterSpacing: '0.05em' }}>
-              ÁREAS DETECTADAS
+              ZONAS DETECTADAS
             </div>
-            <BoundingBoxOverlay
+            <SegmentationOverlay
               imagenUrl={preview}
-              detecciones={result.detecciones ?? []}
+              mascaras={result.mascaras ?? []}
             />
-            <div style={{ marginTop: 8 }}>
-              <SegmentationOverlay
-                imagenUrl={preview}
-                mascaras={result.mascaras ?? []}
-              />
-            </div>
           </div>
 
           {/* Métricas */}

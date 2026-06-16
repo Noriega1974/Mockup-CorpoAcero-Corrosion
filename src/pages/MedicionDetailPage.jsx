@@ -282,39 +282,17 @@ export default function MedicionDetailPage() {
             )}
 
             {activeTab === 'deteccion' && (
-              /* TODO: cuando el backend devuelva el array `detecciones`, pasar a BoundingBoxOverlay */
-              <div>
-                <BoundingBoxOverlay imagenUrl={medicion.url_imagen} detecciones={[]} />
-                <div style={{
-                  marginTop: 14, padding: '12px 16px',
-                  background: 'var(--bg-inset)', borderRadius: 8,
-                  border: '1px solid var(--border)',
-                  fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--text-muted)',
-                  lineHeight: 1.5,
-                }}>
-                  Visualización detallada disponible próximamente — actualmente el backend solo expone
-                  los resultados agregados (nivel, área y confianza). Cuando el endpoint devuelva
-                  las coordenadas de cada detección, se mostrarán aquí los bounding boxes individuales.
-                </div>
-              </div>
+              <BoundingBoxOverlay
+                imagenUrl={medicion.url_imagen}
+                detecciones={medicion.detecciones ?? []}
+              />
             )}
 
             {activeTab === 'segmentacion' && (
-              /* TODO: cuando el backend devuelva `mascaras`, pasar a SegmentationOverlay */
-              <div>
-                <SegmentationOverlay imagenUrl={medicion.url_imagen} mascaras={[]} />
-                <div style={{
-                  marginTop: 14, padding: '12px 16px',
-                  background: 'var(--bg-inset)', borderRadius: 8,
-                  border: '1px solid var(--border)',
-                  fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--text-muted)',
-                  lineHeight: 1.5,
-                }}>
-                  Visualización detallada disponible próximamente — actualmente el backend solo expone
-                  los resultados agregados. Cuando el endpoint devuelva los polígonos de segmentación,
-                  se mostrará aquí la máscara de áreas corroídas.
-                </div>
-              </div>
+              <SegmentationOverlay
+                imagenUrl={medicion.url_imagen}
+                mascaras={medicion.mascaras ?? []}
+              />
             )}
           </div>
         </div>
