@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   Plus, Edit2, X, AlertCircle, Check,
-  RefreshCw, UserX, Trash2, ChevronUp, ChevronDown,
+  RefreshCw, UserX, Trash2, ChevronUp, ChevronDown, Clock,
 } from 'lucide-react';
 import { useGestionUsuarios } from '../hooks/useUsuarios';
 import { useAuth } from '../auth/AuthContext';
@@ -231,16 +231,68 @@ function nextDir(col, sortCol, sortDir) {
   return null; // desc → resetear
 }
 
+// ─── Formulario de colaborador temporal ──────────────────────────────────────
+function ColaboradorForm({ onSubmit, saving, error }) {
+  const [form, setForm] = useState({ nickname: '', password: '', dias: 7 });
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, dias: Number(form.dias) }); }}>
+      <div style={{ padding: '10px 14px', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.2)', borderRadius: 8, marginBottom: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+        El colaborador tendrá rol de <strong>Técnico</strong> y su acceso se revoca automáticamente al vencer el plazo.
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
+          Nickname *
+        </label>
+        <input required value={form.nickname} onChange={set('nickname')} placeholder="ej: CorpAcero-tecnico" style={inputStyle} />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
+          Contraseña *
+        </label>
+        <input required type="password" value={form.password} onChange={set('password')} placeholder="Mín. 8 caracteres" style={inputStyle} />
+      </div>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
+          Duración: <span style={{ color: 'var(--accent-amber)' }}>{form.dias} días</span>
+        </label>
+        <input type="range" min={1} max={30} value={form.dias} onChange={set('dias')} style={{ width: '100%', accentColor: 'var(--accent-amber)' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-faint)', marginTop: 3 }}>
+          <span>1 día</span><span>30 días</span>
+        </div>
+      </div>
+      {error && (
+        <div style={{ padding: '8px 12px', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 7, color: '#dc2626', fontSize: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <AlertCircle size={13} /> {error}
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button type="submit" disabled={saving} style={{
+          padding: '8px 20px', background: 'var(--accent-amber)', border: 'none',
+          borderRadius: 8, cursor: saving ? 'not-allowed' : 'pointer',
+          fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 13, color: 'white',
+          opacity: saving ? 0.6 : 1,
+        }}>
+          {saving ? 'Creando…' : 'Crear colaborador'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ─── UsersPage ────────────────────────────────────────────────────────────────
 export default function UsersPage() {
   const { user: me } = useAuth();
   const isAdmin = me?.groups?.includes('admin');
 
-  const { usuarios, loading, mutating, mutError, crearUsuario, editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario } = useGestionUsuarios();
+  const { usuarios, loading, mutating, mutError, crearUsuario, crearColaborador, editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario } = useGestionUsuarios();
 
   const [search, setSearch] = useState('');
   const [editUsuario, setEditUsuario] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [showColaborador, setShowColaborador] = useState(false);
+  const [colaboradorResult, setColaboradorResult] = useState(null);
   const [confirmToggle, setConfirmToggle] = useState(null);   // { usuario, activarDespues }
   const [confirmEliminar, setConfirmEliminar] = useState(null); // { usuario }
   const [eliminarError, setEliminarError] = useState(null);
@@ -290,6 +342,17 @@ export default function UsersPage() {
     setSortCol(dir ? col : null);
     setSortDir(dir);
   }
+
+  const handleCrearColaborador = async (payload) => {
+    setFormError(null);
+    try {
+      const res = await crearColaborador(payload);
+      setColaboradorResult(res);
+      setShowColaborador(false);
+    } catch (err) {
+      setFormError(err.message);
+    }
+  };
 
   const handleCreate = async (payload) => {
     setFormError(null);
@@ -360,13 +423,24 @@ export default function UsersPage() {
             </span>
           </div>
           {isAdmin && (
-            <button onClick={() => { setShowCreate(true); setFormError(null); }} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '8px 14px', background: 'var(--accent-amber)', border: 'none',
-              borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 12, color: 'white',
-            }}>
-              <Plus size={14} /> Nuevo usuario
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setShowColaborador(true); setFormError(null); }} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '8px 14px', background: 'transparent',
+                border: '1px solid var(--accent-amber)', borderRadius: 8,
+                cursor: 'pointer', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 12,
+                color: 'var(--accent-amber)',
+              }}>
+                <Clock size={14} /> Añadir colaborador
+              </button>
+              <button onClick={() => { setShowCreate(true); setFormError(null); }} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '8px 14px', background: 'var(--accent-amber)', border: 'none',
+                borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 12, color: 'white',
+              }}>
+                <Plus size={14} /> Nuevo usuario
+              </button>
+            </div>
           )}
         </div>
 
@@ -412,12 +486,31 @@ export default function UsersPage() {
                       const activo = esActivo(u);
                       const rolKey = u.rol ?? u.role ?? u.grupos?.[0] ?? 'cliente';
                       const esSelf = me?.email === u.email;
+                      const esColab = !!u.es_colaborador;
+                      const diasRestantes = esColab && u.vence_en
+                        ? Math.max(0, Math.ceil((new Date(u.vence_en) - Date.now()) / 86400000))
+                        : null;
                       return (
                         <tr key={u.id_usuario ?? u.email} style={{ borderBottom: '1px solid var(--border)' }}>
                           <td style={{ padding: '10px 14px' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{u.nombre ?? u.name ?? '—'}</div>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {esColab ? u.nickname : (u.nombre ?? u.name ?? '—')}
+                            </div>
+                            {esColab && (
+                              <div style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 2, fontFamily: 'var(--font-data)' }}>
+                                COLABORADOR TEMPORAL
+                              </div>
+                            )}
                           </td>
-                          <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{u.email}</td>
+                          <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>
+                            {esColab
+                              ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: diasRestantes === 0 ? '#dc2626' : diasRestantes <= 3 ? '#d97706' : 'var(--text-muted)' }}>
+                                  <Clock size={11} />
+                                  {diasRestantes === 0 ? 'Vencido' : `${diasRestantes}d restantes`}
+                                </span>
+                              : u.email
+                            }
+                          </td>
                           <td style={{ padding: '10px 14px' }}><RolBadge rol={rolKey} /></td>
                           <td style={{ padding: '10px 14px' }}>
                             <span style={{
@@ -488,6 +581,42 @@ export default function UsersPage() {
       {showCreate && (
         <Modal title="Nuevo usuario" onClose={() => setShowCreate(false)}>
           <UsuarioForm onSubmit={handleCreate} saving={mutating} error={formError} />
+        </Modal>
+      )}
+
+      {/* ── Modal: Añadir colaborador ── */}
+      {showColaborador && (
+        <Modal title="Añadir colaborador temporal" onClose={() => setShowColaborador(false)}>
+          <ColaboradorForm onSubmit={handleCrearColaborador} saving={mutating} error={formError} />
+        </Modal>
+      )}
+
+      {/* ── Modal: Resultado colaborador creado ── */}
+      {colaboradorResult && (
+        <Modal title="Colaborador creado" onClose={() => setColaboradorResult(null)}>
+          <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)', marginBottom: 6 }}>
+              {colaboradorResult.nickname}
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>
+              Vence el {new Date(colaboradorResult.vence_en).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </div>
+            <div style={{ background: 'var(--bg-inset)', borderRadius: 8, padding: '14px 20px', textAlign: 'left', marginBottom: 16 }}>
+              <div style={{ fontSize: 10, color: 'var(--text-faint)', fontFamily: 'var(--font-data)', letterSpacing: '0.1em', marginBottom: 8 }}>CREDENCIALES DE ACCESO</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Usuario</span>
+                <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)' }}>{colaboradorResult.nickname}</code>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Contraseña</span>
+                <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)' }}>{colaboradorResult.password}</code>
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-faint)', fontFamily: 'var(--font-ui)' }}>
+              Compartí estas credenciales de forma segura. El acceso se revoca automáticamente al vencer.
+            </div>
+          </div>
         </Modal>
       )}
 

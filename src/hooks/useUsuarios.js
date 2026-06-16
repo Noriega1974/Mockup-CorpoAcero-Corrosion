@@ -113,5 +113,20 @@ export function useGestionUsuarios() {
     }
   }, [refetch]);
 
-  return { usuarios, loading, error, mutating, mutError, crearUsuario, editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario, refetch };
+  const crearColaborador = useCallback(async (payload) => {
+    setMutating(true);
+    setMutError(null);
+    try {
+      const result = await apiPost('/colaborador', payload);
+      refetch();
+      return result;
+    } catch (err) {
+      setMutError(err.message);
+      throw err;
+    } finally {
+      setMutating(false);
+    }
+  }, [refetch]);
+
+  return { usuarios, loading, error, mutating, mutError, crearUsuario, crearColaborador, editarUsuario, deshabilitarUsuario, habilitarUsuario, eliminarUsuario, refetch };
 }
