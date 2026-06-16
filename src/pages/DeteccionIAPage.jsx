@@ -182,6 +182,23 @@ export default function DeteccionIAPage() {
             </div>
           </div>
 
+          {/* Imagen con segmentación */}
+          <div style={{ background: 'var(--bg-card)', borderRadius: 10, padding: 12, marginBottom: 16 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600, letterSpacing: '0.05em' }}>
+              ÁREAS DETECTADAS
+            </div>
+            <BoundingBoxOverlay
+              imagenUrl={preview}
+              detecciones={result.detecciones ?? []}
+            />
+            <div style={{ marginTop: 8 }}>
+              <SegmentationOverlay
+                imagenUrl={preview}
+                mascaras={result.mascaras ?? []}
+              />
+            </div>
+          </div>
+
           {/* Métricas */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
             {[
@@ -199,28 +216,6 @@ export default function DeteccionIAPage() {
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Overlays */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div style={{ background: 'var(--bg-card)', borderRadius: 10, padding: 12 }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
-                SEGMENTACIÓN
-              </div>
-              <SegmentationOverlay
-                imagenUrl={preview}
-                mascaras={result.mascaras ?? []}
-              />
-            </div>
-            <div style={{ background: 'var(--bg-card)', borderRadius: 10, padding: 12 }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
-                DETECCIONES
-              </div>
-              <BoundingBoxOverlay
-                imagenUrl={preview}
-                detecciones={result.detecciones ?? []}
-              />
-            </div>
           </div>
 
           <button
