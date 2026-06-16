@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Upload, LayoutGrid, FileText,
   Factory, Users, Settings, LogOut, ChevronLeft,
-  ChevronRight, X, User,
+  ChevronRight, X, User, ScanSearch,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
@@ -13,7 +13,8 @@ const AVATAR_STORAGE_KEY = 'corria-avatar-color';
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/upload',    icon: Upload,          label: 'Subir medición' },
-  { path: '/galeria',   icon: LayoutGrid,      label: 'Galería' },
+  { path: '/galeria',      icon: LayoutGrid,   label: 'Galería' },
+  { path: '/deteccion-ia', icon: ScanSearch,   label: 'Detección IA' },
   { divider: true },
   { path: '/reportes',  icon: FileText,        label: 'Reportes' },
   { divider: true },

@@ -16,6 +16,7 @@ import ReportsPage from './pages/ReportsPage';
 import PlantsPage from './pages/PlantsPage';
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
+import DeteccionIAPage from './pages/DeteccionIAPage';
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/usuarios"     element={<UsersPage />} />
               <Route path="/perfil"       element={<ProfilePage />} />
               <Route path="/configuracion" element={<PlaceholderPage titulo="Configuración" />} />
+              <Route path="/deteccion-ia"  element={<DeteccionIAPage />} />
             </Route>
 
             {/* / y cualquier ruta desconocida redirigen al dashboard */}
