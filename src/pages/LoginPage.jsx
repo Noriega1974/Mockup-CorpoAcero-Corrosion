@@ -62,7 +62,10 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      const result = await login(email.trim(), password);
+      const identifier = loginMode === 'username' && !email.includes('@')
+        ? `${email.trim().toLowerCase()}@corria.app`
+        : email.trim();
+      const result = await login(identifier, password);
       if (result?.needsNewPassword) {
         // Cognito requiere cambio de contraseña en el primer ingreso
         setStep('nueva-contrasena');
