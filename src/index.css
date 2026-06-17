@@ -40,6 +40,10 @@
   --section-alerts:  #fff5f5;
   --section-charts:  #f4faf4;
 
+  /* Nav active state */
+  --nav-active-bg:   rgba(20, 50, 163, 0.11);
+  --nav-active-text: #1432A3;
+
   /* Shadows */
   --shadow-sm:   0 1px 4px rgba(0,0,0,0.06);
   --shadow-md:   0 2px 12px rgba(0,0,0,0.09);
@@ -77,6 +81,9 @@
   --section-detail:  #0f1a14;
   --section-alerts:  #1a0f0f;
   --section-charts:  #0c1a12;
+
+  --nav-active-bg:   rgba(77, 127, 255, 0.14);
+  --nav-active-text: #7BA4FF;
 
   --shadow-sm:   0 1px 4px rgba(0,0,0,0.3);
   --shadow-md:   0 2px 12px rgba(0,0,0,0.4);

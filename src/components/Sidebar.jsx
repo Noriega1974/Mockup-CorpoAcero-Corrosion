@@ -66,10 +66,10 @@ function NavItem({ item, collapsed }) {
         borderRadius: 8,
         cursor: 'pointer',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        background: isActive ? 'rgba(217,119,6,0.14)' : 'transparent',
+        background: isActive ? 'var(--nav-active-bg)' : 'transparent',
         borderLeft: isActive ? '2px solid var(--accent-amber)' : '2px solid transparent',
         transition: 'background 0.13s',
-        color: isActive ? 'var(--accent-amber)' : 'var(--text-muted)',
+        color: isActive ? 'var(--nav-active-text)' : 'var(--text-muted)',
       }}
         onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
         onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
