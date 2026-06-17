@@ -17,7 +17,7 @@ import ReportsPage from './pages/ReportsPage';
 import PlantsPage from './pages/PlantsPage';
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
-import DeteccionIAPage from './pages/DeteccionIAPage';
+
 
 export default function App() {
   return (
@@ -44,9 +44,6 @@ export default function App() {
 
               <Route path="/upload" element={
                 <RoleRoute roles={['admin', 'tecnico']}><UploadPage /></RoleRoute>
-              } />
-              <Route path="/deteccion-ia" element={
-                <RoleRoute roles={['admin', 'tecnico']}><DeteccionIAPage /></RoleRoute>
               } />
               <Route path="/plantas" element={
                 <RoleRoute roles={['admin', 'tecnico']}><PlantsPage /></RoleRoute>
