@@ -233,19 +233,29 @@ function nextDir(col, sortCol, sortDir) {
 
 // ─── Formulario de colaborador temporal ──────────────────────────────────────
 function ColaboradorForm({ onSubmit, saving, error }) {
-  const [form, setForm] = useState({ nickname: '', password: '', dias: 7 });
+  const [form, setForm] = useState({ nickname: '', password: '', dias: 7, rol: 'tecnico' });
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, dias: Number(form.dias) }); }}>
       <div style={{ padding: '10px 14px', background: 'rgba(20,50,163,0.08)', border: '1px solid rgba(20,50,163,0.2)', borderRadius: 8, marginBottom: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-        El colaborador tendrá rol de <strong>Técnico</strong> y su acceso se revoca automáticamente al vencer el plazo.
+        El acceso del colaborador se revoca automáticamente al vencer el plazo.
       </div>
       <div style={{ marginBottom: 14 }}>
         <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
           Nickname *
         </label>
         <input required value={form.nickname} onChange={set('nickname')} placeholder="ej: CorpAcero-tecnico" style={inputStyle} />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
+          Rol *
+        </label>
+        <select value={form.rol} onChange={set('rol')} style={inputStyle}>
+          <option value="admin">Administrador</option>
+          <option value="tecnico">Técnico</option>
+          <option value="cliente">Cliente</option>
+        </select>
       </div>
       <div style={{ marginBottom: 14 }}>
         <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
