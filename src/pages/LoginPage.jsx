@@ -41,6 +41,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   // Paso 1: login inicial
+  const [loginMode, setLoginMode] = useState('email'); // 'email' | 'username'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -147,13 +148,33 @@ export default function LoginPage() {
         {/* ── Paso 1: formulario de login ── */}
         {step === 'login' && (
           <form onSubmit={handleSubmit}>
+            {/* Toggle email / usuario */}
+            <div style={{ display: 'flex', marginBottom: 18, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+              {[['email', 'Correo electrónico'], ['username', 'Usuario']].map(([mode, lbl]) => (
+                <button
+                  key={mode} type="button"
+                  onClick={() => { setLoginMode(mode); setEmail(''); setError(''); }}
+                  style={{
+                    flex: 1, padding: '8px 0', fontSize: 12,
+                    fontFamily: 'var(--font-data)', fontWeight: 600, letterSpacing: '0.04em',
+                    cursor: 'pointer', border: 'none',
+                    background: loginMode === mode ? 'var(--accent-amber)' : 'var(--bg-inset)',
+                    color: loginMode === mode ? 'white' : 'var(--text-muted)',
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>Email</label>
+              <label style={labelStyle}>{loginMode === 'email' ? 'Correo electrónico' : 'Usuario'}</label>
               <input
-                type="email"
+                type={loginMode === 'email' ? 'email' : 'text'}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="usuario@corpacero.com"
+                placeholder={loginMode === 'email' ? 'usuario@corpacero.com' : 'Nombre de usuario'}
                 required
                 disabled={submitting}
                 style={inputStyle}
@@ -168,7 +189,6 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
                 disabled={submitting}
                 style={inputStyle}
@@ -213,7 +233,7 @@ export default function LoginPage() {
                   type="password"
                   value={nuevaPw}
                   onChange={e => setNuevaPw(e.target.value)}
-                  placeholder="••••••••"
+
                   required
                   disabled={submitting}
                   autoFocus
@@ -229,7 +249,7 @@ export default function LoginPage() {
                   type="password"
                   value={confirmarPw}
                   onChange={e => setConfirmarPw(e.target.value)}
-                  placeholder="••••••••"
+
                   required
                   disabled={submitting}
                   style={inputStyle}
