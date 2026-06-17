@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Download, Share2, Trash2, MapPin, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, Share2, Trash2, MapPin, AlertCircle, Thermometer, Droplets, Wind } from 'lucide-react';
 import { useMedicion } from '../hooks/useMedicion';
 import { useAuth } from '../auth/AuthContext';
 import { nivelColor, nivelBg, nivelLabel, nivelToStatus } from '../lib/statusUtils';
@@ -359,6 +359,19 @@ export default function MedicionDetailPage() {
             </div>
           </div>
 
+          {/* Clima */}
+          {medicion.clima && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
+              <SectionTitle>Condiciones meteorológicas</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <ClimaItem icon={<Thermometer size={13} />} label="Temperatura" value={medicion.clima.temperatura_c != null ? `${medicion.clima.temperatura_c} °C` : '—'} />
+                <ClimaItem icon={<Droplets size={13} />} label="Humedad" value={medicion.clima.humedad_pct != null ? `${medicion.clima.humedad_pct} %` : '—'} />
+                <ClimaItem icon={<Wind size={13} />} label="Viento" value={medicion.clima.viento_kmh != null ? `${medicion.clima.viento_kmh} km/h` : '—'} />
+                <ClimaItem icon={<Droplets size={13} />} label="Precipitación" value={medicion.clima.precipitacion_mm != null ? `${medicion.clima.precipitacion_mm} mm` : '—'} />
+              </div>
+            </div>
+          )}
+
           {/* Notas */}
           {medicion.notas && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
@@ -515,6 +528,20 @@ function ActionButton({ icon, onClick, danger, disabled, children }) {
       {icon}
       {children}
     </button>
+  );
+}
+
+function ClimaItem({ icon, label, value }) {
+  return (
+    <div style={{ background: 'var(--bg-inset)', borderRadius: 6, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-faint)', fontSize: 9, fontFamily: 'var(--font-data)', letterSpacing: '0.08em' }}>
+        {icon}
+        {label.toUpperCase()}
+      </div>
+      <div style={{ fontFamily: 'var(--font-data)', fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+        {value}
+      </div>
+    </div>
   );
 }
 
