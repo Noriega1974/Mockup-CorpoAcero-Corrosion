@@ -546,8 +546,8 @@ export default function UploadPage() {
             </p>
             <div style={{ display: 'flex', gap: 10, marginBottom: esMedicionPasada ? 16 : 0 }}>
               {[
-                { val: false, label: 'No — usar fecha de hoy' },
-                { val: true,  label: 'Sí — ingresar fecha' },
+                { val: false, label: 'No' },
+                { val: true,  label: 'Sí' },
               ].map(({ val, label }) => (
                 <button
                   key={String(val)}
