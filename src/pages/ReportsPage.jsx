@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  AreaChart, Area,
+  ComposedChart, Area, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { FileText, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -71,6 +71,21 @@ function KPICard({ label, value, sub }) {
   );
 }
 
+function agregarRegresion(data) {
+  const n = data.length;
+  if (n < 2) return data.map(d => ({ ...d, tendencia: d.area }));
+  const ys = data.map(d => d.area);
+  const sumY = ys.reduce((a, b) => a + b, 0);
+  const sumXY = ys.reduce((a, y, i) => a + i * y, 0);
+  const sumXX = ys.reduce((_, __, i) => _ + i * i, 0);
+  const slope = (n * sumXY - (n * (n - 1) / 2) * sumY) / (n * sumXX - Math.pow(n * (n - 1) / 2, 2) / n);
+  const intercept = (sumY - slope * (n - 1) / 2) / n;
+  return data.map((d, i) => ({
+    ...d,
+    tendencia: parseFloat(Math.max(0, intercept + slope * i).toFixed(2)),
+  }));
+}
+
 const hoyISO = () => {
   const d = new Date();
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
@@ -92,11 +107,11 @@ export default function ReportsPage() {
   const tendencia = reporte?.tendencia ?? null;
   const mediciones = reporte?.mediciones ?? [];
 
-  const areaData = mediciones.map(m => ({
+  const areaData = agregarRegresion(mediciones.map(m => ({
     fecha: m.timestamp?.slice(0, 10) ?? '',
     area: typeof m.area_corroida_pct === 'number' ? m.area_corroida_pct : 0,
     nivel: m.nivel_corrosion ?? 0,
-  }));
+  })));
 
   return (
     <>
@@ -246,13 +261,14 @@ export default function ReportsPage() {
                 <div style={{ height: 200, background: 'var(--border)', borderRadius: 6, animation: 'shimmer 1.5s infinite' }} />
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={areaData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <ComposedChart data={areaData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={v => v.slice(5)} />
                     <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
                     <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                    <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(217,119,6,0.12)" strokeWidth={2} dot={false} />
-                  </AreaChart>
+                    <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(217,119,6,0.12)" strokeWidth={2} dot={false} name="Área %" />
+                    <Line type="linear" dataKey="tendencia" stroke="#60a5fa" strokeWidth={1.5} dot={false} strokeDasharray="4 3" name="Tendencia" />
+                  </ComposedChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -268,7 +284,7 @@ export default function ReportsPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-ui)' }}>
                   <thead>
                     <tr style={{ background: 'var(--bg-page)' }}>
-                      {['Fecha', 'Planta', 'Ciudad', 'Nivel', 'Área corroída'].map(h => (
+                      {['Fecha', 'Planta', 'Ciudad', 'Nivel', 'Área corroída', 'Temp.', 'Humedad'].map(h => (
                         <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', borderBottom: '1px solid var(--border)' }}>
                           {h}
                         </th>
@@ -277,7 +293,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody>
                     {loading
-                      ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
+                      ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={7} />)
                       : mediciones.map((m, i) => {
                           const status = nivelToStatus(m.nivel_corrosion ?? 0);
                           return (
@@ -298,12 +314,18 @@ export default function ReportsPage() {
                               <td style={{ padding: '9px 12px', color: 'var(--text-primary)', fontFamily: 'var(--font-data)' }}>
                                 {m.area_corroida_pct != null ? `${m.area_corroida_pct.toFixed(1)}%` : '—'}
                               </td>
+                              <td style={{ padding: '9px 12px', color: 'var(--text-muted)', fontFamily: 'var(--font-data)' }}>
+                                {m.clima?.temperatura_c != null ? `${m.clima.temperatura_c}°C` : '—'}
+                              </td>
+                              <td style={{ padding: '9px 12px', color: 'var(--text-muted)', fontFamily: 'var(--font-data)' }}>
+                                {m.clima?.humedad_pct != null ? `${m.clima.humedad_pct}%` : '—'}
+                              </td>
                             </tr>
                           );
                         })
                     }
                     {!loading && mediciones.length === 0 && (
-                      <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 12 }}>Sin mediciones en el rango seleccionado</td></tr>
+                      <tr><td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 12 }}>Sin mediciones en el rango seleccionado</td></tr>
                     )}
                   </tbody>
                 </table>
