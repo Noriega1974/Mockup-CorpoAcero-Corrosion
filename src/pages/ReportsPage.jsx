@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { FileText, Download, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -71,37 +71,29 @@ function KPICard({ label, value, sub }) {
   );
 }
 
+const hoyISO = () => new Date().toISOString().slice(0, 10);
+
 export default function ReportsPage() {
-  const [tab, setTab] = useState('global'); // 'global' | 'planta'
   const [idPunto, setIdPunto] = useState('');
   const [desde, setDesde] = useState('');
-  const [hasta, setHasta] = useState('');
+  const hasta = hoyISO();
   const { reporte, loading, error, generarReporte, limpiar } = useReporte();
   const { puntos } = usePuntos();
 
   const handleGenerar = useCallback(() => {
-    // Convertir fechas YYYY-MM-DD a ISO8601 completo para el backend
     const desdeISO = desde ? new Date(desde + 'T00:00:00').toISOString() : undefined;
-    const hastaISO = hasta ? new Date(hasta + 'T23:59:59').toISOString() : undefined;
-    generarReporte(tab === 'planta' ? 'planta' : 'global', {
-      idPunto: tab === 'planta' ? idPunto : undefined,
-      desde: desdeISO,
-      hasta: hastaISO,
-    });
-  }, [tab, idPunto, desde, hasta, generarReporte]);
+    const hastaISO = new Date(hasta + 'T23:59:59').toISOString();
+    generarReporte('planta', { idPunto, desde: desdeISO, hasta: hastaISO });
+  }, [idPunto, desde, hasta, generarReporte]);
 
   const handlePrint = useCallback(() => {
     const prev = document.title;
-    document.title = tab === 'planta'
-      ? `Reporte Planta — CorrIA ${new Date().toLocaleDateString('es-CO')}`
-      : `Reporte Global — CorrIA ${new Date().toLocaleDateString('es-CO')}`;
+    document.title = `Reporte Planta — CorrIA ${new Date().toLocaleDateString('es-CO')}`;
     window.print();
     document.title = prev;
-  }, [tab]);
+  }, []);
 
-  // Datos derivados del reporte.
-  // tendencia_pct viene del reporte global (número); tendencia del de planta (string)
-  const tendencia = reporte?.tendencia_pct ?? reporte?.tendencia ?? null;
+  const tendencia = reporte?.tendencia ?? null;
   const mediciones = reporte?.mediciones ?? [];
   const distribucion = reporte?.distribucion_nivel ?? null;
 
@@ -167,67 +159,67 @@ export default function ReportsPage() {
           borderRadius: 10, padding: '16px 20px', marginBottom: 20,
           display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-end',
         }}>
-          {/* Tabs tipo/alcance */}
-          <div style={{ display: 'flex', gap: 0, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
-            {[['global', 'Global'], ['planta', 'Por planta']].map(([val, lbl]) => (
-              <button key={val} onClick={() => { setTab(val); limpiar(); }} style={{
-                padding: '7px 16px', border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: tab === val ? 700 : 400,
-                background: tab === val ? 'var(--accent-amber)' : 'var(--bg-page)',
-                color: tab === val ? 'white' : 'var(--text-muted)',
-                transition: 'all 0.13s',
-              }}>{lbl}</button>
-            ))}
+          {/* Selector de planta */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Planta
+            </label>
+            <select value={idPunto} onChange={e => { setIdPunto(e.target.value); limpiar(); }} style={{
+              padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)',
+              background: 'var(--bg-page)', color: 'var(--text-primary)',
+              fontFamily: 'var(--font-ui)', fontSize: 13, minWidth: 200,
+            }}>
+              <option value="">Seleccionar planta...</option>
+              {puntos.map(p => (
+                <option key={p.id_punto} value={p.id_punto}>
+                  {[p.sede, p.ciudad, p.empresa].filter(Boolean).join(' · ')}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Selector de planta */}
-          {tab === 'planta' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                Planta
-              </label>
-              <select value={idPunto} onChange={e => setIdPunto(e.target.value)} style={{
+          {/* Fecha desde */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Desde
+            </label>
+            <input
+              type="date"
+              value={desde}
+              onChange={e => setDesde(e.target.value)}
+              style={{
                 padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)',
                 background: 'var(--bg-page)', color: 'var(--text-primary)',
-                fontFamily: 'var(--font-ui)', fontSize: 13, minWidth: 180,
-              }}>
-                <option value="">Seleccionar...</option>
-                {puntos.map(p => (
-                  <option key={p.id_punto} value={p.id_punto}>
-                    {[p.sede, p.ciudad, p.empresa].filter(Boolean).join(' · ')}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+                fontFamily: 'var(--font-ui)', fontSize: 13,
+              }}
+            />
+          </div>
 
-          {/* Fechas */}
-          {['desde', 'hasta'].map(field => (
-            <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                {field === 'desde' ? 'Desde' : 'Hasta'}
-              </label>
-              <input
-                type="date"
-                value={field === 'desde' ? desde : hasta}
-                onChange={e => field === 'desde' ? setDesde(e.target.value) : setHasta(e.target.value)}
-                style={{
-                  padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)',
-                  background: 'var(--bg-page)', color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-ui)', fontSize: 13,
-                }}
-              />
-            </div>
-          ))}
+          {/* Fecha hasta — siempre hoy */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Hasta
+            </label>
+            <input
+              type="date"
+              value={hasta}
+              readOnly
+              style={{
+                padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)',
+                background: 'var(--bg-inset)', color: 'var(--text-muted)',
+                fontFamily: 'var(--font-ui)', fontSize: 13, cursor: 'default',
+              }}
+            />
+          </div>
 
           <button
             onClick={handleGenerar}
-            disabled={tab === 'planta' && !idPunto}
+            disabled={!idPunto}
             style={{
               padding: '8px 20px', background: 'var(--accent-amber)', border: 'none',
-              borderRadius: 8, cursor: tab === 'planta' && !idPunto ? 'not-allowed' : 'pointer',
+              borderRadius: 8, cursor: !idPunto ? 'not-allowed' : 'pointer',
               fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 13, color: 'white',
-              opacity: tab === 'planta' && !idPunto ? 0.5 : 1,
+              opacity: !idPunto ? 0.5 : 1,
             }}
           >
             Generar reporte
@@ -254,11 +246,11 @@ export default function ReportsPage() {
             {/* Print header */}
             <div className="print-only" style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-ui)' }}>
-                {tab === 'planta' ? `Reporte de Planta — ${reporte?.nombre_punto ?? ''}` : 'Reporte Global — CorrIA'}
+                {`Reporte de Planta — ${reporte?.punto?.sede ?? ''}`}
               </div>
               <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
                 Generado el {new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}
-                {desde && ` · Desde ${desde}`}{hasta && ` · Hasta ${hasta}`}
+                {desde && ` · Desde ${desde}`} · Hasta {hasta}
               </div>
             </div>
 
@@ -319,27 +311,6 @@ export default function ReportsPage() {
                 )}
               </div>
 
-              {/* Mediciones por ubicación */}
-              {tab === 'global' && (
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, gridColumn: '1 / -1' }}>
-                  <div style={{ fontSize: 11, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 12 }}>
-                    Mediciones por ciudad / planta
-                  </div>
-                  {loading ? (
-                    <div style={{ height: 160, background: 'var(--border)', borderRadius: 6, animation: 'shimmer 1.5s infinite' }} />
-                  ) : (
-                    <ResponsiveContainer width="100%" height={160}>
-                      <BarChart data={barData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                        <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} allowDecimals={false} />
-                        <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                        <Bar dataKey="count" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Tabla de mediciones */}

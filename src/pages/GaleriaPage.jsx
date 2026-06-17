@@ -20,12 +20,11 @@ function tiempoRelativo(timestamp) {
 }
 
 // ─── Card de galería ─────────────────────────────────────────────────────────
-function MedicionCard({ medicion, onClick }) {
+function MedicionCard({ medicion, puntoInfo, onClick }) {
   const nivel = medicion.nivel_corrosion ?? 0;
   const color = nivelColor(nivel);
-  const punto = medicion.punto_info ?? {};
-  const sede = punto.sede ?? medicion.id_punto ?? '—';
-  const ciudad = punto.ciudad ?? '';
+  const sede = medicion.punto_info?.sede ?? medicion.sede ?? puntoInfo?.sede ?? medicion.id_punto ?? '—';
+  const ciudad = medicion.punto_info?.ciudad ?? medicion.ciudad ?? puntoInfo?.ciudad ?? '';
 
   return (
     <div
@@ -373,6 +372,7 @@ export default function GaleriaPage() {
               <MedicionCard
                 key={m.id_medicion}
                 medicion={m}
+                puntoInfo={puntos.find(p => p.id_punto === m.id_punto)}
                 onClick={() => navigate(`/galeria/${m.id_medicion}`, { state: { filters: { nivelFilter, puntoFilter, fechaInicio, fechaFin, notasQuery } } })}
               />
             ))}

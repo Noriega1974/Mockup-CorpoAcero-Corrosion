@@ -212,6 +212,8 @@ export default function UploadPage() {
 
   // Detalles opcionales
   const [notas, setNotas] = useState('');
+  const [esMedicionPasada, setEsMedicionPasada] = useState(false);
+  const [fechaMedicion, setFechaMedicion] = useState(() => new Date().toISOString().slice(0, 10));
 
   // Filtrado del autocomplete de puntos existentes
   const puntosFiltrados = puntos.filter(p => {
@@ -306,6 +308,7 @@ export default function UploadPage() {
         latitud_real: exifGps.latitude,
         longitud_real: exifGps.longitude,
       }),
+      ...(esMedicionPasada && { timestamp_medicion: fechaMedicion }),
     };
 
     try {
@@ -538,6 +541,42 @@ export default function UploadPage() {
 
           {/* ─── SECCIÓN 3: Detalles opcionales ─── */}
           <Section title="3. Detalles (opcional)" accent="var(--accent-green)">
+
+            {/* Toggle: medición pasada */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                <div
+                  onClick={() => setEsMedicionPasada(v => !v)}
+                  style={{
+                    width: 40, height: 22, borderRadius: 11,
+                    background: esMedicionPasada ? 'var(--accent-amber)' : 'var(--border)',
+                    position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute', top: 3, left: esMedicionPasada ? 21 : 3,
+                    width: 16, height: 16, borderRadius: '50%', background: 'white',
+                    transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  }} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                  Es una medición pasada
+                </span>
+              </label>
+              {esMedicionPasada && (
+                <div style={{ marginTop: 10 }}>
+                  <label style={labelStyle}>Fecha de la medición</label>
+                  <input
+                    type="date"
+                    value={fechaMedicion}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={e => setFechaMedicion(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+              )}
+            </div>
+
             <div>
               <label style={labelStyle}>Notas</label>
               <textarea

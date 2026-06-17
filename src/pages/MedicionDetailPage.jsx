@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Share2, Trash2, MapPin, AlertCircle, Thermometer, Droplets, Wind } from 'lucide-react';
 import { useMedicion } from '../hooks/useMedicion';
+import { usePuntos } from '../hooks/usePuntos';
 import { useAuth } from '../auth/AuthContext';
 import { nivelColor, nivelBg, nivelLabel, nivelToStatus } from '../lib/statusUtils';
 import BoundingBoxOverlay from '../components/BoundingBoxOverlay';
@@ -123,6 +124,7 @@ export default function MedicionDetailPage() {
   const location = useLocation();
   const { user } = useAuth();
   const { medicion, loading, error } = useMedicion(idMedicion);
+  const { puntos } = usePuntos();
   const [activeTab, setActiveTab] = useState('original');
   const [shareMsg, setShareMsg] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -199,7 +201,16 @@ export default function MedicionDetailPage() {
   const nivel = medicion.nivel_corrosion ?? 0;
   const color = nivelColor(nivel);
   const bg = nivelBg(nivel);
-  const punto = medicion.punto_info ?? {};
+  const puntoFallback = puntos.find(p => p.id_punto === medicion.id_punto) ?? {};
+  const punto = Object.keys(medicion.punto_info ?? {}).length > 0
+    ? medicion.punto_info
+    : {
+        sede:        medicion.sede      ?? puntoFallback.sede      ?? '',
+        ciudad:      medicion.ciudad    ?? puntoFallback.ciudad    ?? '',
+        empresa:     medicion.empresa   ?? puntoFallback.empresa   ?? '',
+        coordenadas: puntoFallback.coordenadas ?? {},
+        id_punto:    medicion.id_punto,
+      };
   const lat = punto.coordenadas?.lat;
   const lng = punto.coordenadas?.lng;
 
