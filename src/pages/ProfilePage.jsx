@@ -99,6 +99,8 @@ export default function ProfilePage() {
     setInfoError(null);
     try {
       await actualizarPerfil({ nombre });
+      localStorage.setItem('corria-display-name', nombre);
+      window.dispatchEvent(new CustomEvent('corria-user-name', { detail: nombre }));
       setInfoMsg('Perfil actualizado correctamente.');
     } catch (err) {
       setInfoError(err.message);

@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../auth/AuthContext';
 
 const AVATAR_STORAGE_KEY = 'corria-avatar-color';
+const NAME_STORAGE_KEY   = 'corria-display-name';
 
 // ─── Definición de items de navegación ───────────────────────────────────────
 const NAV_ITEMS = [
@@ -97,11 +98,20 @@ export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [avatarColor, setAvatarColor] = React.useState(() => localStorage.getItem(AVATAR_STORAGE_KEY) ?? '#1432A3');
+  const [displayName, setDisplayName] = React.useState(() => localStorage.getItem(NAME_STORAGE_KEY) || '');
   React.useEffect(() => {
     const handler = (e) => setAvatarColor(e.detail);
     window.addEventListener('corria-avatar-color', handler);
     return () => window.removeEventListener('corria-avatar-color', handler);
   }, []);
+  React.useEffect(() => {
+    const handler = (e) => setDisplayName(e.detail);
+    window.addEventListener('corria-user-name', handler);
+    return () => window.removeEventListener('corria-user-name', handler);
+  }, []);
+  React.useEffect(() => {
+    if (!localStorage.getItem(NAME_STORAGE_KEY) && user?.name) setDisplayName(user.name);
+  }, [user?.name]);
   const groups = user?.groups ?? [];
   const rol = getPrimaryRole(groups);
 
@@ -218,7 +228,7 @@ export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
               fontFamily: 'var(--font-data)', fontWeight: 700, fontSize: 12,
               color: 'white', flexShrink: 0,
             }}>
-              {getInitials(user.name || user.email)}
+              {getInitials(displayName || user.name || user.email)}
             </div>
             <div style={{ overflow: 'hidden', minWidth: 0 }}>
               <div style={{
@@ -226,7 +236,7 @@ export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
                 color: 'var(--text-primary)', whiteSpace: 'nowrap',
                 overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
-                {user.name || user.email}
+                {displayName || user.name || user.email}
               </div>
               {rol && (
                 <div style={{
@@ -252,7 +262,7 @@ export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
               color: 'white', margin: '0 auto 4px', cursor: 'pointer',
             }}
           >
-            {getInitials(user.name || user.email)}
+            {getInitials(displayName || user.name || user.email)}
           </div>
         )}
 
