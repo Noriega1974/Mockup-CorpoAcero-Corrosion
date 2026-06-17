@@ -84,8 +84,35 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
     tipo_estructura: initial.tipo_estructura ?? '',
     grosor_mm: initial.grosor_mm ?? '',
   });
+  const [geoMode, setGeoMode] = useState('auto');
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState(null);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const detectarUbicacion = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Tu navegador no soporta geolocalización.');
+      return;
+    }
+    setGeoLoading(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm(f => ({
+          ...f,
+          latitud: parseFloat(pos.coords.latitude.toFixed(6)),
+          longitud: parseFloat(pos.coords.longitude.toFixed(6)),
+        }));
+        setGeoLoading(false);
+      },
+      (err) => {
+        setGeoError('No se pudo obtener la ubicación. Verificá los permisos del navegador.');
+        setGeoLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -135,13 +162,64 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-        {[['latitud', 'Latitud'], ['longitud', 'Longitud']].map(([k, lbl]) => (
-          <div key={k}>
-            <label style={LABEL_STYLE}>{lbl}</label>
-            <input type="number" step="any" value={form[k]} onChange={set(k)} style={inputStyle} />
+      {/* Ubicación */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LABEL_STYLE}>Ubicación</label>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+          {[['auto', 'Detectar automáticamente'], ['manual', 'Ingresar manualmente']].map(([val, lbl]) => (
+            <button
+              key={val} type="button"
+              onClick={() => { setGeoMode(val); setGeoError(null); }}
+              style={{
+                flex: 1, padding: '7px 0', fontSize: 11, fontFamily: 'var(--font-data)',
+                fontWeight: 600, letterSpacing: '0.04em', cursor: 'pointer',
+                border: `1px solid ${geoMode === val ? 'var(--accent-amber)' : 'var(--border)'}`,
+                background: geoMode === val ? 'rgba(20,50,163,0.07)' : 'var(--bg-page)',
+                color: geoMode === val ? 'var(--accent-amber)' : 'var(--text-muted)',
+                borderRadius: 7,
+              }}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+
+        {geoMode === 'auto' && (
+          <div>
+            <button
+              type="button" onClick={detectarUbicacion} disabled={geoLoading}
+              style={{
+                width: '100%', padding: '9px 0', background: 'var(--accent-amber)', border: 'none',
+                borderRadius: 8, color: 'white', fontFamily: 'var(--font-ui)', fontWeight: 600,
+                fontSize: 13, cursor: geoLoading ? 'not-allowed' : 'pointer', opacity: geoLoading ? 0.7 : 1,
+              }}
+            >
+              {geoLoading ? 'Detectando…' : form.latitud !== '' ? '↻ Volver a detectar' : '📍 Detectar mi ubicación'}
+            </button>
+            {form.latitud !== '' && !geoLoading && (
+              <div style={{ marginTop: 8, padding: '6px 10px', background: 'rgba(20,50,163,0.06)', border: '1px solid rgba(20,50,163,0.15)', borderRadius: 6, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-data)' }}>
+                📍 {form.latitud}, {form.longitud}
+              </div>
+            )}
           </div>
-        ))}
+        )}
+
+        {geoMode === 'manual' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {[['latitud', 'Latitud'], ['longitud', 'Longitud']].map(([k, lbl]) => (
+              <div key={k}>
+                <label style={LABEL_STYLE}>{lbl}</label>
+                <input type="number" step="any" value={form[k]} onChange={set(k)} style={inputStyle} placeholder="Ej: 4.710989" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {geoError && (
+          <div style={{ marginTop: 8, fontSize: 11, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <AlertCircle size={12} /> {geoError}
+          </div>
+        )}
       </div>
       {error && (
         <div style={{ padding: '8px 12px', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 7, color: '#dc2626', fontSize: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
