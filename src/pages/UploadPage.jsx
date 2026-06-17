@@ -539,44 +539,49 @@ export default function UploadPage() {
             )}
           </Section>
 
-          {/* ─── SECCIÓN 3: Detalles opcionales ─── */}
-          <Section title="3. Detalles (opcional)" accent="var(--accent-green)">
-
-            {/* Toggle: medición pasada */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                <div
-                  onClick={() => setEsMedicionPasada(v => !v)}
+          {/* ─── SECCIÓN 3: Fecha de la medición ─── */}
+          <Section title="3. Fecha de la medición" accent="var(--accent-blue)">
+            <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-ui)' }}>
+              ¿Es una medición tomada en el pasado?
+            </p>
+            <div style={{ display: 'flex', gap: 10, marginBottom: esMedicionPasada ? 16 : 0 }}>
+              {[
+                { val: false, label: 'No — usar fecha de hoy' },
+                { val: true,  label: 'Sí — ingresar fecha' },
+              ].map(({ val, label }) => (
+                <button
+                  key={String(val)}
+                  type="button"
+                  onClick={() => setEsMedicionPasada(val)}
                   style={{
-                    width: 40, height: 22, borderRadius: 11,
-                    background: esMedicionPasada ? 'var(--accent-amber)' : 'var(--border)',
-                    position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0,
+                    flex: 1, padding: '10px 8px', borderRadius: 8,
+                    border: `1px solid ${esMedicionPasada === val ? 'var(--accent-amber)' : 'var(--border)'}`,
+                    background: esMedicionPasada === val ? 'rgba(217,119,6,0.1)' : 'var(--bg-inset)',
+                    color: esMedicionPasada === val ? 'var(--accent-amber)' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                    transition: 'all 0.13s',
                   }}
                 >
-                  <div style={{
-                    position: 'absolute', top: 3, left: esMedicionPasada ? 21 : 3,
-                    width: 16, height: 16, borderRadius: '50%', background: 'white',
-                    transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                  }} />
-                </div>
-                <span style={{ fontFamily: 'var(--font-ui)', fontSize: 13, color: 'var(--text-secondary)' }}>
-                  Es una medición pasada
-                </span>
-              </label>
-              {esMedicionPasada && (
-                <div style={{ marginTop: 10 }}>
-                  <label style={labelStyle}>Fecha de la medición</label>
-                  <input
-                    type="date"
-                    value={fechaMedicion}
-                    max={new Date().toISOString().slice(0, 10)}
-                    onChange={e => setFechaMedicion(e.target.value)}
-                    style={inputStyle}
-                  />
-                </div>
-              )}
+                  {label}
+                </button>
+              ))}
             </div>
+            {esMedicionPasada && (
+              <div>
+                <label style={labelStyle}>Fecha de la medición</label>
+                <input
+                  type="date"
+                  value={fechaMedicion}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={e => setFechaMedicion(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            )}
+          </Section>
 
+          {/* ─── SECCIÓN 4: Detalles opcionales ─── */}
+          <Section title="4. Detalles (opcional)" accent="var(--accent-green)">
             <div>
               <label style={labelStyle}>Notas</label>
               <textarea
