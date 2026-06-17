@@ -96,8 +96,8 @@ export default function PlantDetail({ punto }) {
         {/* Meta info */}
         <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
           {[
-            { l: 'Material', v: punto.tipo_material ?? '—' },
-            { l: 'Estructura', v: punto.tipo_estructura ?? '—' },
+            { l: 'Estructura', v: punto.tipo_estructura || '—' },
+            { l: 'Espesor', v: punto.grosor_mm != null ? `${punto.grosor_mm} mm` : '—' },
             { l: 'Mediciones', v: mediciones.length },
           ].map(({ l, v }) => (
             <div key={l} style={{ textAlign: 'center', minWidth: 50 }}>
@@ -106,6 +106,27 @@ export default function PlantDetail({ punto }) {
             </div>
           ))}
         </div>
+
+        {/* Clima de la última medición */}
+        {ultimaMedicion?.clima && (
+          <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+            {[
+              { icon: '🌡', label: 'Temp.', v: ultimaMedicion.clima.temperatura_c != null ? `${ultimaMedicion.clima.temperatura_c}°C` : null },
+              { icon: '💧', label: 'Humedad', v: ultimaMedicion.clima.humedad_pct != null ? `${ultimaMedicion.clima.humedad_pct}%` : null },
+              { icon: '🌧', label: 'Precip.', v: ultimaMedicion.clima.precipitacion_mm != null ? `${ultimaMedicion.clima.precipitacion_mm} mm` : null },
+              { icon: '💨', label: 'Viento', v: ultimaMedicion.clima.velocidad_viento_kmh != null ? `${ultimaMedicion.clima.velocidad_viento_kmh} km/h` : null },
+            ].filter(x => x.v).map(({ icon, label, v }) => (
+              <div key={label} style={{ textAlign: 'center', minWidth: 44 }}>
+                <div style={{ fontSize: 12, lineHeight: 1 }}>{icon}</div>
+                <div style={{ fontFamily: 'var(--font-data)', fontWeight: 600, fontSize: 11, color: 'var(--text-primary)', marginTop: 2 }}>{v}</div>
+                <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>{label.toUpperCase()}</div>
+              </div>
+            ))}
+            <div style={{ alignSelf: 'flex-end', fontSize: 8, color: 'var(--text-faint)', letterSpacing: '0.08em', marginLeft: 'auto' }}>
+              ÚLTIMA MEDICIÓN
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gráfica de tendencia */}
