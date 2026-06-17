@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Factory, Plus, Edit2, MapPin, Clock, LayoutGrid, X, Check, AlertCircle } from 'lucide-react';
 import { useGestionPuntos } from '../hooks/usePunto';
 import { useMedicionesPunto } from '../hooks/useMedicionesPunto';
