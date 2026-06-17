@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
-  AreaChart, Area, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { FileText, Download, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useReporte } from '../hooks/useReporte';
@@ -71,7 +71,10 @@ function KPICard({ label, value, sub }) {
   );
 }
 
-const hoyISO = () => new Date().toISOString().slice(0, 10);
+const hoyISO = () => {
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+};
 
 export default function ReportsPage() {
   const [idPunto, setIdPunto] = useState('');
@@ -95,26 +98,12 @@ export default function ReportsPage() {
 
   const tendencia = reporte?.tendencia ?? null;
   const mediciones = reporte?.mediciones ?? [];
-  const distribucion = reporte?.distribucion_nivel ?? null;
-
-  const pieData = distribucion
-    ? [0, 1, 2, 3].map(n => ({ name: nivelLabel(n), value: distribucion[n] ?? 0, color: nivelColor(n) })).filter(d => d.value > 0)
-    : [];
 
   const areaData = mediciones.map(m => ({
-    fecha: m.fecha_creacion?.slice(0, 10) ?? '',
+    fecha: m.timestamp?.slice(0, 10) ?? '',
     area: typeof m.area_corroida_pct === 'number' ? m.area_corroida_pct : 0,
     nivel: m.nivel_corrosion ?? 0,
   }));
-
-  const barData = (() => {
-    const agg = {};
-    mediciones.forEach(m => {
-      const k = m.ciudad ?? m.nombre_punto ?? 'N/D';
-      agg[k] = (agg[k] ?? 0) + 1;
-    });
-    return Object.entries(agg).map(([name, count]) => ({ name, count }));
-  })();
 
   return (
     <>
@@ -265,52 +254,24 @@ export default function ReportsPage() {
               />
             </div>
 
-            {/* Gráficos */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-              {/* Área corroída en el tiempo */}
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 11, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 12 }}>
-                  Área corroída (%) en el tiempo
-                </div>
-                {loading ? (
-                  <div style={{ height: 200, background: 'var(--border)', borderRadius: 6, animation: 'shimmer 1.5s infinite' }} />
-                ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart data={areaData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={v => v.slice(5)} />
-                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                      <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                      <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(217,119,6,0.12)" strokeWidth={2} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
+            {/* Gráfico: área corroída en el tiempo */}
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 12 }}>
+                Área corroída (%) en el tiempo
               </div>
-
-              {/* Distribución por nivel */}
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 11, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 12 }}>
-                  Distribución por nivel
-                </div>
-                {loading ? (
-                  <div style={{ height: 200, background: 'var(--border)', borderRadius: 6, animation: 'shimmer 1.5s infinite' }} />
-                ) : pieData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value">
-                        {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)', fontSize: 12 }}>
-                    Sin datos de distribución
-                  </div>
-                )}
-              </div>
-
+              {loading ? (
+                <div style={{ height: 200, background: 'var(--border)', borderRadius: 6, animation: 'shimmer 1.5s infinite' }} />
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={areaData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={v => v.slice(5)} />
+                    <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
+                    <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(217,119,6,0.12)" strokeWidth={2} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Tabla de mediciones */}
@@ -338,9 +299,9 @@ export default function ReportsPage() {
                           const status = nivelToStatus(m.nivel_corrosion ?? 0);
                           return (
                             <tr key={m.id_medicion ?? i} style={{ borderBottom: '1px solid var(--border)' }}>
-                              <td style={{ padding: '9px 12px', color: 'var(--text-primary)' }}>{m.fecha_creacion?.slice(0, 10) ?? '—'}</td>
-                              <td style={{ padding: '9px 12px', color: 'var(--text-primary)' }}>{m.nombre_punto ?? '—'}</td>
-                              <td style={{ padding: '9px 12px', color: 'var(--text-muted)' }}>{m.ciudad ?? '—'}</td>
+                              <td style={{ padding: '9px 12px', color: 'var(--text-primary)' }}>{m.timestamp?.slice(0, 10) ?? '—'}</td>
+                              <td style={{ padding: '9px 12px', color: 'var(--text-primary)' }}>{m.sede ?? reporte?.punto?.sede ?? '—'}</td>
+                              <td style={{ padding: '9px 12px', color: 'var(--text-muted)' }}>{m.ciudad ?? reporte?.punto?.ciudad ?? '—'}</td>
                               <td style={{ padding: '9px 12px' }}>
                                 <span style={{
                                   display: 'inline-block', padding: '2px 8px', borderRadius: 5,
