@@ -3,7 +3,7 @@ import {
   AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { FileText, Download, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { FileText, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useReporte } from '../hooks/useReporte';
 import { usePuntos } from '../hooks/usePuntos';
 import { nivelLabel, nivelColor, nivelBg, nivelToStatus } from '../lib/statusUtils';
@@ -84,17 +84,10 @@ export default function ReportsPage() {
   const { puntos } = usePuntos();
 
   const handleGenerar = useCallback(() => {
-    const desdeISO = desde ? new Date(desde + 'T00:00:00').toISOString() : undefined;
+    const desdeISO = new Date(desde + 'T00:00:00').toISOString();
     const hastaISO = new Date(hasta + 'T23:59:59').toISOString();
     generarReporte('planta', { idPunto, desde: desdeISO, hasta: hastaISO });
   }, [idPunto, desde, hasta, generarReporte]);
-
-  const handlePrint = useCallback(() => {
-    const prev = document.title;
-    document.title = `Reporte Planta — CorrIA ${new Date().toLocaleDateString('es-CO')}`;
-    window.print();
-    document.title = prev;
-  }, []);
 
   const tendencia = reporte?.tendencia ?? null;
   const mediciones = reporte?.mediciones ?? [];
@@ -130,16 +123,6 @@ export default function ReportsPage() {
               Reportes
             </span>
           </div>
-          {reporte && (
-            <button onClick={handlePrint} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '8px 14px', background: 'var(--accent-amber)',
-              border: 'none', borderRadius: 8, cursor: 'pointer',
-              fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 12, color: 'white',
-            }}>
-              <Download size={14} /> Exportar PDF
-            </button>
-          )}
         </div>
 
         {/* ── Filtros ── */}
@@ -203,12 +186,12 @@ export default function ReportsPage() {
 
           <button
             onClick={handleGenerar}
-            disabled={!idPunto}
+            disabled={!idPunto || !desde}
             style={{
               padding: '8px 20px', background: 'var(--accent-amber)', border: 'none',
-              borderRadius: 8, cursor: !idPunto ? 'not-allowed' : 'pointer',
+              borderRadius: 8, cursor: (!idPunto || !desde) ? 'not-allowed' : 'pointer',
               fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 13, color: 'white',
-              opacity: !idPunto ? 0.5 : 1,
+              opacity: (!idPunto || !desde) ? 0.5 : 1,
             }}
           >
             Generar reporte
