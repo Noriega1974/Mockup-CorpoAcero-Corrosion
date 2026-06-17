@@ -108,42 +108,18 @@ export default function LoginPage() {
       {/* Franja superior con acento */}
       <div style={{
         height: 4,
-        background: `linear-gradient(90deg, var(--accent-amber), var(--accent-orange))`,
+        background: `linear-gradient(90deg, #1432A3, #00C8F5)`,
       }} />
 
       <div style={{ padding: '36px 36px 40px' }}>
 
         {/* Logo + título */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 56,
-            height: 56,
-            background: 'var(--accent-amber)',
-            borderRadius: 12,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-            boxShadow: '0 4px 16px rgba(217,119,6,0.3)',
-          }}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect x="4" y="10" width="24" height="5" rx="1" fill="white" opacity="0.95"/>
-              <rect x="4" y="17" width="24" height="5" rx="1" fill="white" opacity="0.7"/>
-              <rect x="4" y="24" width="24" height="4" rx="1" fill="white" opacity="0.45"/>
-              <path d="M4 10L16 5L28 10" stroke="white" strokeWidth="1.5" strokeLinejoin="round" fill="none" opacity="0.9"/>
-            </svg>
-          </div>
-
-          <div style={{
-            fontFamily: 'var(--font-ui)',
-            fontWeight: 700,
-            fontSize: 22,
-            color: 'var(--text-primary)',
-            letterSpacing: '-0.01em',
-          }}>
-            Corpacero
-            <span style={{ fontWeight: 400, fontSize: 15, color: 'var(--text-muted)', marginLeft: 5 }}>S.A.S</span>
-          </div>
+          <img
+            src="/corpacero-logo.png"
+            alt="Corpacero — Aliados de Acero"
+            style={{ height: 72, width: 'auto', objectFit: 'contain', marginBottom: 14 }}
+          />
           <div style={{
             fontFamily: 'var(--font-ui)',
             fontWeight: 500,
@@ -151,7 +127,7 @@ export default function LoginPage() {
             color: 'var(--accent-amber)',
             marginTop: 2,
           }}>
-            Detección de Corrosión · CorrIA
+            Detección de corrosión mediante inteligencia artificial
           </div>
           <div style={{
             fontFamily: 'var(--font-data)',

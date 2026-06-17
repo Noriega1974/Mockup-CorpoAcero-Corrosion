@@ -16,12 +16,12 @@
   --border-strong: #8fa8c0;
 
   /* Accents */
-  --accent-amber:     #d97706;
-  --accent-amber-dim: #92400e;
+  --accent-amber:     #1432A3;
+  --accent-amber-dim: #0D1E78;
   --accent-red:       #dc2626;
   --accent-green:     #16a34a;
   --accent-blue:      #0369a1;
-  --accent-orange:    #ea580c;
+  --accent-orange:    #00C8F5;
 
   /* Text */
   --text-primary:   #0f172a;
@@ -36,7 +36,7 @@
   /* Section colors — each major block has its own tint */
   --section-kpi:     #ffffff;
   --section-map:     #f0f7ff;
-  --section-detail:  #fff9f0;
+  --section-detail:  #f0f4ff;
   --section-alerts:  #fff5f5;
   --section-charts:  #f4faf4;
 
@@ -60,12 +60,12 @@
   --border-bright: #2a4055;
   --border-strong: #3a5570;
 
-  --accent-amber:     #f59e0b;
-  --accent-amber-dim: #b45309;
+  --accent-amber:     #4D7FFF;
+  --accent-amber-dim: #2952CC;
   --accent-red:       #ef4444;
   --accent-green:     #22c55e;
   --accent-blue:      #38bdf8;
-  --accent-orange:    #f97316;
+  --accent-orange:    #22D3EE;
 
   --text-primary:   #e2eaf2;
   --text-secondary: #8dafc8;

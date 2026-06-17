@@ -156,34 +156,11 @@ export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
       }}>
         {/* Logo — se oculta en modo colapsado desktop */}
         {(!collapsed || isMobile) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
-            <div style={{
-              width: 32, height: 32, background: 'var(--accent-amber)', borderRadius: 7,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(217,119,6,0.3)',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-                <rect x="4" y="10" width="24" height="5" rx="1" fill="white" opacity="0.95"/>
-                <rect x="4" y="17" width="24" height="5" rx="1" fill="white" opacity="0.7"/>
-                <rect x="4" y="24" width="24" height="4" rx="1" fill="white" opacity="0.45"/>
-                <path d="M4 10L16 5L28 10" stroke="white" strokeWidth="1.5" strokeLinejoin="round" fill="none" opacity="0.9"/>
-              </svg>
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{
-                fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 14,
-                color: 'var(--text-primary)', lineHeight: 1.2, whiteSpace: 'nowrap',
-              }}>
-                CorrIA
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-data)', fontSize: 9,
-                color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase',
-              }}>
-                Corpacero S.A.S
-              </div>
-            </div>
-          </div>
+          <img
+            src="/corpacero-logo.png"
+            alt="Corpacero"
+            style={{ height: 34, width: 'auto', objectFit: 'contain', display: 'block' }}
+          />
         )}
 
         {/* Botón colapsar — en desktop, icono de chevron; en móvil, X */}
