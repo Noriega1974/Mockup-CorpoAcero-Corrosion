@@ -74,20 +74,12 @@ function KPICard({ label, value, sub }) {
 function agregarRegresion(data) {
   if (data.length < 2) return data.map(d => ({ ...d, tendencia: null }));
 
-  // Find the start of the current sheet (after the last detected replacement)
-  // A replacement is a drop >60% from a previous area that was already >5%
-  let segmentStart = 0;
-  for (let i = 1; i < data.length; i++) {
-    const prev = data[i - 1].area;
-    const curr = data[i].area;
-    if (prev > 5 && curr < prev * 0.4) segmentStart = i;
-  }
-
-  // Only use points in the current segment that have actual corrosion (nivel > 0)
-  const validIndices = [];
-  for (let i = segmentStart; i < data.length; i++) {
-    if (data[i].nivel > 0 && data[i].area > 1) validIndices.push(i);
-  }
+  // Only include points with actual corrosion (nivel > 0). Points with nivel=0
+  // represent new/replaced sheets and must not anchor the regression.
+  const validIndices = data.reduce((acc, d, i) => {
+    if (d.nivel > 0 && d.area > 1) acc.push(i);
+    return acc;
+  }, []);
 
   if (validIndices.length < 2) return data.map(d => ({ ...d, tendencia: null }));
 
@@ -110,6 +102,7 @@ function agregarRegresion(data) {
     ])
   );
 
+  // tendencia is null for nivel=0 points — the line breaks there automatically
   return data.map((d, i) => ({ ...d, tendencia: trendByIndex.get(i) ?? null }));
 }
 
