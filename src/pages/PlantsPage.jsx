@@ -71,6 +71,8 @@ const inputStyle = {
 };
 
 // ─── Formulario de planta (crear / editar) ───────────────────────────────────
+const LABEL_STYLE = { display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 };
+
 function PuntoForm({ initial = {}, onSubmit, saving, error }) {
   const [form, setForm] = useState({
     nombre_punto: initial.nombre_punto ?? '',
@@ -79,6 +81,8 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
     descripcion: initial.descripcion ?? '',
     latitud: initial.latitud ?? '',
     longitud: initial.longitud ?? '',
+    tipo_estructura: initial.tipo_estructura ?? '',
+    grosor_mm: initial.grosor_mm ?? '',
   });
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -88,6 +92,7 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
     const payload = { ...form };
     if (payload.latitud !== '') payload.latitud = Number(payload.latitud);
     if (payload.longitud !== '') payload.longitud = Number(payload.longitud);
+    if (payload.grosor_mm !== '') payload.grosor_mm = Number(payload.grosor_mm);
     onSubmit(payload);
   };
 
@@ -100,18 +105,37 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
         { key: 'descripcion', label: 'Descripción' },
       ].map(f => (
         <div key={f.key} style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
-            {f.label}{f.required && ' *'}
-          </label>
+          <label style={LABEL_STYLE}>{f.label}{f.required && ' *'}</label>
           <input value={form[f.key]} onChange={set(f.key)} required={f.required} style={inputStyle} />
         </div>
       ))}
+
+      {/* Tipo de estructura */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LABEL_STYLE}>Tipo de estructura</label>
+        <select value={form.tipo_estructura} onChange={set('tipo_estructura')} style={inputStyle}>
+          <option value="">Seleccionar...</option>
+          <option value="Láminas">Láminas</option>
+          <option value="Tuberías">Tuberías</option>
+        </select>
+      </div>
+
+      {/* Grosor de lámina/tubería */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LABEL_STYLE}>Espesor nominal (mm)</label>
+        <input
+          type="number" step="0.1" min="0"
+          placeholder="Ej: 3.5"
+          value={form.grosor_mm}
+          onChange={set('grosor_mm')}
+          style={inputStyle}
+        />
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
         {[['latitud', 'Latitud'], ['longitud', 'Longitud']].map(([k, lbl]) => (
           <div key={k}>
-            <label style={{ display: 'block', fontFamily: 'var(--font-data)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 5 }}>
-              {lbl}
-            </label>
+            <label style={LABEL_STYLE}>{lbl}</label>
             <input type="number" step="any" value={form[k]} onChange={set(k)} style={inputStyle} />
           </div>
         ))}
@@ -163,6 +187,8 @@ function PuntoDetail({ punto, onEdit, isAdmin }) {
                 ['ID', punto.id_punto],
                 ['Ciudad', punto.ciudad],
                 ['Departamento', punto.departamento],
+                ['Tipo de estructura', punto.tipo_estructura || '—'],
+                ['Espesor nominal', punto.grosor_mm != null ? `${punto.grosor_mm} mm` : '—'],
                 ['Latitud', punto.latitud],
                 ['Longitud', punto.longitud],
               ].map(([label, value]) => (

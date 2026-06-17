@@ -260,6 +260,30 @@ export default function ReportsPage() {
               </div>
             </div>
 
+            {/* Plant metadata row */}
+            {reporte?.punto && (
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: 20, marginBottom: 20,
+                padding: '12px 16px', background: 'var(--bg-card)',
+                border: '1px solid var(--border)', borderRadius: 10,
+                fontFamily: 'var(--font-ui)', fontSize: 12,
+              }}>
+                {[
+                  ['Planta', reporte.punto.sede ?? reporte.punto.nombre_punto],
+                  ['Ciudad', reporte.punto.ciudad],
+                  ['Estructura', reporte.punto.tipo_estructura],
+                  ['Espesor', reporte.punto.grosor_mm != null ? `${reporte.punto.grosor_mm} mm` : null],
+                ].filter(([, v]) => v).map(([label, value]) => (
+                  <div key={label}>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginRight: 6 }}>
+                      {label}
+                    </span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* KPIs */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
               <KPICard label="Total mediciones" value={loading ? '…' : (reporte?.total_mediciones ?? mediciones.length)} />
