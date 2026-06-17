@@ -72,18 +72,45 @@ function KPICard({ label, value, sub }) {
 }
 
 function agregarRegresion(data) {
-  const n = data.length;
-  if (n < 2) return data.map(d => ({ ...d, tendencia: d.area }));
-  const ys = data.map(d => d.area);
+  if (data.length < 2) return data.map(d => ({ ...d, tendencia: null }));
+
+  // Find the start of the current sheet (after the last detected replacement)
+  // A replacement is a drop >60% from a previous area that was already >5%
+  let segmentStart = 0;
+  for (let i = 1; i < data.length; i++) {
+    const prev = data[i - 1].area;
+    const curr = data[i].area;
+    if (prev > 5 && curr < prev * 0.4) segmentStart = i;
+  }
+
+  // Only use points in the current segment that have actual corrosion (nivel > 0)
+  const validIndices = [];
+  for (let i = segmentStart; i < data.length; i++) {
+    if (data[i].nivel > 0 && data[i].area > 1) validIndices.push(i);
+  }
+
+  if (validIndices.length < 2) return data.map(d => ({ ...d, tendencia: null }));
+
+  const n = validIndices.length;
+  const xs = validIndices.map((_, i) => i);
+  const ys = validIndices.map(i => data[i].area);
+  const sumX = xs.reduce((a, b) => a + b, 0);
   const sumY = ys.reduce((a, b) => a + b, 0);
-  const sumXY = ys.reduce((a, y, i) => a + i * y, 0);
-  const sumXX = ys.reduce((_, __, i) => _ + i * i, 0);
-  const slope = (n * sumXY - (n * (n - 1) / 2) * sumY) / (n * sumXX - Math.pow(n * (n - 1) / 2, 2) / n);
-  const intercept = (sumY - slope * (n - 1) / 2) / n;
-  return data.map((d, i) => ({
-    ...d,
-    tendencia: parseFloat(Math.max(0, intercept + slope * i).toFixed(2)),
-  }));
+  const sumXY = xs.reduce((acc, x, i) => acc + x * ys[i], 0);
+  const sumXX = xs.reduce((acc, x) => acc + x * x, 0);
+  const denom = n * sumXX - sumX * sumX;
+  if (denom === 0) return data.map(d => ({ ...d, tendencia: null }));
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+
+  const trendByIndex = new Map(
+    validIndices.map((dataIdx, segIdx) => [
+      dataIdx,
+      parseFloat(Math.max(0, intercept + slope * segIdx).toFixed(2)),
+    ])
+  );
+
+  return data.map((d, i) => ({ ...d, tendencia: trendByIndex.get(i) ?? null }));
 }
 
 const hoyISO = () => {
