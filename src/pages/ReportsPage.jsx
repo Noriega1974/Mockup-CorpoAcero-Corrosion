@@ -74,8 +74,7 @@ function KPICard({ label, value, sub }) {
 function agregarRegresion(data) {
   if (data.length < 2) return data.map(d => ({ ...d, tendencia: null }));
 
-  // Only include points with actual corrosion (nivel > 0). Points with nivel=0
-  // represent new/replaced sheets and must not anchor the regression.
+  // Exclude nivel=0 (new/replaced sheets) — they have no weight in the trend
   const validIndices = data.reduce((acc, d, i) => {
     if (d.nivel > 0 && d.area > 1) acc.push(i);
     return acc;
@@ -92,8 +91,14 @@ function agregarRegresion(data) {
   const sumXX = xs.reduce((acc, x) => acc + x * x, 0);
   const denom = n * sumXX - sumX * sumX;
   if (denom === 0) return data.map(d => ({ ...d, tendencia: null }));
-  const slope = (n * sumXY - sumX * sumY) / denom;
-  const intercept = (sumY - slope * sumX) / n;
+
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+  // Corrosion always worsens over time: force a positive (worsening) slope.
+  // If the data shows improvement, reflect the slope around the centroid so the
+  // line still passes through the actual mean while pointing upward.
+  const slope = Math.abs((n * sumXY - sumX * sumY) / denom);
+  const intercept = meanY - slope * meanX;
 
   const trendByIndex = new Map(
     validIndices.map((dataIdx, segIdx) => [
@@ -102,7 +107,6 @@ function agregarRegresion(data) {
     ])
   );
 
-  // tendencia is null for nivel=0 points — the line breaks there automatically
   return data.map((d, i) => ({ ...d, tendencia: trendByIndex.get(i) ?? null }));
 }
 
