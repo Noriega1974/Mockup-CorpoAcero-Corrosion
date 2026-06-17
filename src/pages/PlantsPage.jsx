@@ -79,8 +79,8 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
     ciudad: initial.ciudad ?? '',
     departamento: initial.departamento ?? '',
     descripcion: initial.descripcion ?? '',
-    latitud: initial.latitud ?? '',
-    longitud: initial.longitud ?? '',
+    latitud: initial.coordenadas?.lat ?? initial.latitud ?? '',
+    longitud: initial.coordenadas?.lng ?? initial.longitud ?? '',
     tipo_estructura: initial.tipo_estructura ?? '',
     grosor_mm: initial.grosor_mm ?? '',
   });
@@ -93,6 +93,9 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
     if (payload.latitud !== '') payload.latitud = Number(payload.latitud);
     if (payload.longitud !== '') payload.longitud = Number(payload.longitud);
     if (payload.grosor_mm !== '') payload.grosor_mm = Number(payload.grosor_mm);
+    if (payload.latitud !== '' && payload.longitud !== '') {
+      payload.coordenadas = { lat: payload.latitud, lng: payload.longitud };
+    }
     onSubmit(payload);
   };
 
@@ -189,8 +192,8 @@ function PuntoDetail({ punto, onEdit, isAdmin }) {
                 ['Departamento', punto.departamento],
                 ['Tipo de estructura', punto.tipo_estructura || '—'],
                 ['Espesor nominal', punto.grosor_mm != null ? `${punto.grosor_mm} mm` : '—'],
-                ['Latitud', punto.latitud],
-                ['Longitud', punto.longitud],
+                ['Latitud', punto.coordenadas?.lat ?? punto.latitud],
+                ['Longitud', punto.coordenadas?.lng ?? punto.longitud],
               ].map(([label, value]) => (
                 <div key={label}>
                   <div style={{ fontSize: 10, fontFamily: 'var(--font-data)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 3 }}>{label}</div>
