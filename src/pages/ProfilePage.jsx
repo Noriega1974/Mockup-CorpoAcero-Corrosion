@@ -5,7 +5,7 @@ import { useUsuarioPerfil } from '../hooks/useUsuario';
 import { useAuth } from '../auth/AuthContext';
 
 const AVATAR_COLORS = [
-  { value: '#d97706', label: 'Ámbar' },
+  { value: '#1432A3', label: 'Navy' },
   { value: '#2563eb', label: 'Azul' },
   { value: '#16a34a', label: 'Verde' },
   { value: '#dc2626', label: 'Rojo' },
@@ -72,7 +72,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const { perfil, loading, saving, saveError, actualizarPerfil } = useUsuarioPerfil();
 
-  const [avatarColor, setAvatarColor] = useState(() => localStorage.getItem(STORAGE_KEY) ?? '#d97706');
+  const [avatarColor, setAvatarColor] = useState(() => localStorage.getItem(STORAGE_KEY) ?? '#1432A3');
   const [nombre, setNombre] = useState('');
   const [infoMsg, setInfoMsg] = useState(null);
   const [infoError, setInfoError] = useState(null);
@@ -91,6 +91,7 @@ export default function ProfilePage() {
   const handleAvatarColor = (color) => {
     setAvatarColor(color);
     localStorage.setItem(STORAGE_KEY, color);
+    window.dispatchEvent(new CustomEvent('corria-avatar-color', { detail: color }));
   };
 
   const handleSaveInfo = async () => {

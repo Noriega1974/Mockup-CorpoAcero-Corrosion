@@ -238,7 +238,7 @@ function ColaboradorForm({ onSubmit, saving, error }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, dias: Number(form.dias) }); }}>
-      <div style={{ padding: '10px 14px', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.2)', borderRadius: 8, marginBottom: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+      <div style={{ padding: '10px 14px', background: 'rgba(20,50,163,0.08)', border: '1px solid rgba(20,50,163,0.2)', borderRadius: 8, marginBottom: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
         El colaborador tendrá rol de <strong>Técnico</strong> y su acceso se revoca automáticamente al vencer el plazo.
       </div>
       <div style={{ marginBottom: 14 }}>

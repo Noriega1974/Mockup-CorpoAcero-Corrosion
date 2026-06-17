@@ -47,7 +47,7 @@ function TendenciaBadge({ valor }) {
     </span>
   );
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#d97706', fontSize: 12, fontWeight: 600 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent-amber)', fontSize: 12, fontWeight: 600 }}>
       <Minus size={13} /> Estable
     </span>
   );
@@ -309,7 +309,7 @@ export default function ReportsPage() {
                     <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={v => v.slice(5)} />
                     <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
                     <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
-                    <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(217,119,6,0.12)" strokeWidth={2} dot={false} name="Área %" />
+                    <Area type="monotone" dataKey="area" stroke="var(--accent-amber)" fill="rgba(20,50,163,0.12)" strokeWidth={2} dot={false} name="Área %" />
                     <Line type="linear" dataKey="tendencia" stroke="#60a5fa" strokeWidth={1.5} dot={false} strokeDasharray="4 3" name="Tendencia" />
                   </ComposedChart>
                 </ResponsiveContainer>

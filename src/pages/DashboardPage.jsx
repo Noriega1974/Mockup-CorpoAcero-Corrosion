@@ -45,7 +45,7 @@ export default function DashboardPage() {
               padding: '8px 16px', background: 'var(--accent-amber)',
               border: 'none', borderRadius: 8, textDecoration: 'none',
               fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 12, color: 'white',
-              flexShrink: 0, boxShadow: '0 2px 8px rgba(217,119,6,0.3)',
+              flexShrink: 0, boxShadow: '0 2px 8px rgba(20,50,163,0.3)',
             }}
           >
             <Upload size={14} />

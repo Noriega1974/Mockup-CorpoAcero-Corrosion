@@ -96,7 +96,12 @@ function NavItem({ item, collapsed }) {
 export default function Sidebar({ collapsed, isMobile, onToggle, onLogout }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const avatarColor = localStorage.getItem(AVATAR_STORAGE_KEY) ?? '#d97706';
+  const [avatarColor, setAvatarColor] = React.useState(() => localStorage.getItem(AVATAR_STORAGE_KEY) ?? '#1432A3');
+  React.useEffect(() => {
+    const handler = (e) => setAvatarColor(e.detail);
+    window.addEventListener('corria-avatar-color', handler);
+    return () => window.removeEventListener('corria-avatar-color', handler);
+  }, []);
   const groups = user?.groups ?? [];
   const rol = getPrimaryRole(groups);
 
