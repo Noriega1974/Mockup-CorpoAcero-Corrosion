@@ -92,13 +92,8 @@ function agregarRegresion(data) {
   const denom = n * sumXX - sumX * sumX;
   if (denom === 0) return data.map(d => ({ ...d, tendencia: null }));
 
-  const meanX = sumX / n;
-  const meanY = sumY / n;
-  // Corrosion always worsens over time: force a positive (worsening) slope.
-  // If the data shows improvement, reflect the slope around the centroid so the
-  // line still passes through the actual mean while pointing upward.
-  const slope = Math.abs((n * sumXY - sumX * sumY) / denom);
-  const intercept = meanY - slope * meanX;
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
 
   const trendByIndex = new Map(
     validIndices.map((dataIdx, segIdx) => [
