@@ -152,13 +152,18 @@ export default function MedicionDetailPage() {
     if (activeTab === 'original') return handleDescargar();
 
     setDescargandoVista(true);
+    let objectUrl;
     try {
+      // Se trae la imagen vía fetch (no <img crossOrigin>) para no depender de que el
+      // navegador re-valide CORS en una respuesta ya cacheada, y sin tocar la URL original
+      // (si es una URL firmada de S3, cualquier query param agregado invalida la firma).
+      const resp = await fetch(medicion.url_imagen, { mode: 'cors', cache: 'no-store' });
+      if (!resp.ok) throw new Error(`No se pudo obtener la imagen (HTTP ${resp.status})`);
+      const sourceBlob = await resp.blob();
+      objectUrl = URL.createObjectURL(sourceBlob);
+
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      // cache-buster: si la imagen ya se cargó sin CORS (tab "Original"), el navegador
-      // puede reusar esa respuesta cacheada y tatuar el canvas al volver a pedirla.
-      const sep = medicion.url_imagen.includes('?') ? '&' : '?';
-      img.src = `${medicion.url_imagen}${sep}_cb=${Date.now()}`;
+      img.src = objectUrl;
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -210,6 +215,7 @@ export default function MedicionDetailPage() {
       console.error('Error al generar descarga de vista', err);
       alert('No se pudo generar la descarga de esta vista. Probá de nuevo en unos minutos.');
     } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
       setDescargandoVista(false);
     }
   }
