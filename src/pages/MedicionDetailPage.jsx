@@ -155,7 +155,10 @@ export default function MedicionDetailPage() {
     try {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.src = medicion.url_imagen;
+      // cache-buster: si la imagen ya se cargó sin CORS (tab "Original"), el navegador
+      // puede reusar esa respuesta cacheada y tatuar el canvas al volver a pedirla.
+      const sep = medicion.url_imagen.includes('?') ? '&' : '?';
+      img.src = `${medicion.url_imagen}${sep}_cb=${Date.now()}`;
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -203,7 +206,8 @@ export default function MedicionDetailPage() {
       link.download = `medicion-${idMedicion}-${activeTab}.png`;
       link.click();
       URL.revokeObjectURL(url);
-    } catch {
+    } catch (err) {
+      console.error('Error al generar descarga de vista', err);
       alert('No se pudo generar la descarga de esta vista. Probá de nuevo en unos minutos.');
     } finally {
       setDescargandoVista(false);
@@ -500,8 +504,8 @@ export default function MedicionDetailPage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <MetaItem label="ID medición" value={medicion.id_medicion?.substring(0, 12) + '…'} />
-              <MetaItem label="ID punto" value={medicion.id_punto?.substring(0, 12) + '…'} />
+              <MetaItem label="ID medición" value={medicion.id_medicion ?? '—'} wrap />
+              <MetaItem label="ID punto" value={medicion.id_punto ?? '—'} wrap />
               <MetaItem label="Planta" value={punto.sede ?? '—'} />
               <MetaItem label="Ciudad" value={punto.ciudad ?? '—'} />
               <MetaItem label="Empresa" value={punto.empresa ?? '—'} />
@@ -571,11 +575,14 @@ function MetaLabel({ children }) {
   );
 }
 
-function MetaItem({ label, value }) {
+function MetaItem({ label, value, wrap }) {
   return (
     <div style={{ background: 'var(--bg-inset)', borderRadius: 6, padding: '8px 10px' }}>
       <div style={{ fontSize: 9, color: 'var(--text-faint)', marginBottom: 2, fontFamily: 'var(--font-data)', letterSpacing: '0.08em' }}>{label}</div>
-      <div style={{
+      <div style={wrap ? {
+        fontFamily: 'var(--font-data)', fontWeight: 600, fontSize: 11,
+        color: 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.4,
+      } : {
         fontFamily: 'var(--font-data)', fontWeight: 600, fontSize: 12,
         color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{value}</div>
