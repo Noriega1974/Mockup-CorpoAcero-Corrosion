@@ -152,8 +152,8 @@ function PuntoForm({ initial = {}, onSubmit, saving, error }) {
       <div style={{ marginBottom: 14 }}>
         <label style={LABEL_STYLE}>Espesor nominal (mm)</label>
         <input
-          type="number" step="0.1" min="0"
-          placeholder="Ej: 3.5"
+          type="number" step="0.001" min="0"
+          placeholder="Ej: 3.527"
           value={form.grosor_mm}
           onChange={set('grosor_mm')}
           style={inputStyle}
