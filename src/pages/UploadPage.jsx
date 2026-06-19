@@ -145,7 +145,7 @@ function ResultadoAnalisis({ result, onReset, onDashboard }) {
           Subir otra imagen
         </button>
         <button onClick={onDashboard} style={btnPrimaryStyle}>
-          Ver en dashboard →
+          Ver en galería →
         </button>
       </div>
     </div>
@@ -323,7 +323,7 @@ export default function UploadPage() {
         <ResultadoAnalisis
           result={result}
           onReset={() => { reset(); setImagen(null); setPreview(null); setExifGps(null); setPuntoSeleccionado(null); }}
-          onDashboard={() => navigate('/dashboard')}
+          onDashboard={() => navigate('/galeria')}
         />
       </div>
     );

@@ -5,6 +5,7 @@ import { useMedicion } from '../hooks/useMedicion';
 import { usePuntos } from '../hooks/usePuntos';
 import { useAuth } from '../auth/AuthContext';
 import { nivelColor, nivelBg, nivelLabel, nivelToStatus } from '../lib/statusUtils';
+import { apiDelete } from '../lib/apiClient';
 import BoundingBoxOverlay from '../components/BoundingBoxOverlay';
 import SegmentationOverlay from '../components/SegmentationOverlay';
 
@@ -128,6 +129,8 @@ export default function MedicionDetailPage() {
   const [activeTab, setActiveTab] = useState('original');
   const [shareMsg, setShareMsg] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState('');
 
   const isAdmin = user?.groups?.includes('admin');
 
@@ -135,6 +138,18 @@ export default function MedicionDetailPage() {
   function handleBack() {
     const prevFilters = location.state?.filters;
     navigate('/galeria', prevFilters ? { state: prevFilters } : undefined);
+  }
+
+  async function handleEliminar() {
+    setEliminando(true);
+    setErrorEliminar('');
+    try {
+      await apiDelete(`/mediciones/${medicion.id_punto}?id_medicion=${encodeURIComponent(idMedicion)}`);
+      navigate('/galeria');
+    } catch (err) {
+      setErrorEliminar(err.message || 'No se pudo eliminar la medición.');
+      setEliminando(false);
+    }
   }
 
   async function handleDescargar() {
@@ -433,13 +448,14 @@ export default function MedicionDetailPage() {
                 Ver planta en dashboard
               </ActionButton>
 
-              {/* Eliminar: solo admins, placeholder */}
+              {/* Eliminar: solo admins */}
               {isAdmin && (
                 <>
                   <ActionButton
                     icon={<Trash2 size={15} />}
                     danger
                     onClick={() => setShowDeleteConfirm(true)}
+                    disabled={eliminando}
                   >
                     Eliminar medición
                   </ActionButton>
@@ -452,17 +468,33 @@ export default function MedicionDetailPage() {
                       borderRadius: 8, fontSize: 12,
                       color: 'var(--text-secondary)', lineHeight: 1.5,
                     }}>
-                      Eliminación no implementada todavía. Esta acción estará disponible en la siguiente iteración.
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        style={{
-                          display: 'block', marginTop: 8, background: 'transparent',
-                          border: '1px solid var(--border)', borderRadius: 5, padding: '4px 10px',
-                          cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)',
-                        }}
-                      >
-                        Cerrar
-                      </button>
+                      Esta acción borra la medición y su foto de forma permanente. ¿Confirmás?
+                      {errorEliminar && (
+                        <div style={{ color: 'var(--accent-red)', marginTop: 6 }}>{errorEliminar}</div>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                        <button
+                          onClick={handleEliminar}
+                          disabled={eliminando}
+                          style={{
+                            background: 'var(--accent-red)', border: 'none', borderRadius: 5,
+                            padding: '6px 12px', cursor: eliminando ? 'not-allowed' : 'pointer',
+                            fontSize: 11, color: 'white', fontWeight: 600, opacity: eliminando ? 0.6 : 1,
+                          }}
+                        >
+                          {eliminando ? 'Eliminando…' : 'Sí, eliminar'}
+                        </button>
+                        <button
+                          onClick={() => { setShowDeleteConfirm(false); setErrorEliminar(''); }}
+                          disabled={eliminando}
+                          style={{
+                            background: 'transparent', border: '1px solid var(--border)', borderRadius: 5,
+                            padding: '6px 12px', cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)',
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </>
