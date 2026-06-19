@@ -125,6 +125,14 @@ export default function ColombiaMap({ selectedPunto, onSelectPunto }) {
     });
   }, [puntos, mediciones, selectedPunto, onSelectPunto]);
 
+  // Llevar el mapa hasta el punto seleccionado (ej. desde la lista de sedes)
+  useEffect(() => {
+    const lat = selectedPunto?.coordenadas?.lat;
+    const lng = selectedPunto?.coordenadas?.lng;
+    if (!mapInstanceRef.current || lat == null || lng == null) return;
+    mapInstanceRef.current.flyTo([lat, lng], 13, { duration: 0.8 });
+  }, [selectedPunto]);
+
   const puntosCount = puntos.length;
 
   return (
