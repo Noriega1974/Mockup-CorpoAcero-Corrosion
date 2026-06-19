@@ -52,7 +52,7 @@ function AlertDetailModal({ alerta, onClose }) {
             { label: 'Área corroída', value: `${(alerta.area_corroida_pct ?? 0).toFixed(1)}%` },
             { label: 'Confianza', value: alerta.confianza_promedio ? `${(alerta.confianza_promedio * 100).toFixed(0)}%` : '—' },
             { label: 'Empresa', value: punto.empresa ?? '—' },
-            { label: 'Fuente', value: alerta.fuente ?? '—' },
+            { label: 'Ciudad', value: punto.ciudad ?? '—' },
           ].map(({ label, value }) => (
             <div key={label} style={{ background: 'var(--bg-inset)', padding: '8px 12px', borderRadius: 6 }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>

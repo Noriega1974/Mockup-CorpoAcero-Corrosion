@@ -349,7 +349,6 @@ export default function MedicionDetailPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <MetaItem label="ID medición" value={medicion.id_medicion?.substring(0, 12) + '…'} />
               <MetaItem label="ID punto" value={medicion.id_punto?.substring(0, 12) + '…'} />
-              <MetaItem label="Fuente" value={medicion.fuente ?? '—'} />
               <MetaItem label="Planta" value={punto.sede ?? '—'} />
               <MetaItem label="Ciudad" value={punto.ciudad ?? '—'} />
               <MetaItem label="Empresa" value={punto.empresa ?? '—'} />

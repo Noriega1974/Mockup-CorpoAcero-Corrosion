@@ -91,19 +91,12 @@ export default function KPIBar() {
       color: 'var(--accent-green)',
       icon: '✓',
     },
-    {
-      label: 'Fuente Móvil',
-      value: mediciones.filter(m => m.fuente === 'movil').length,
-      sub: 'subidas vía app',
-      color: 'var(--accent-blue)',
-      icon: '📷',
-    },
   ];
 
   const loading = loadingMed || loadingAlt;
 
   return (
-    <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
+    <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
       {kpis.map((kpi, i) => (
         <KPICard key={i} {...kpi} loading={loading} />
       ))}
