@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAlertas } from '../hooks/useAlertas';
+import { usePuntos } from '../hooks/usePuntos';
 import {
   nivelToStatus, nivelColor, nivelBg, nivelLabel,
   getStatusColor, getStatusBg,
@@ -7,10 +9,18 @@ import {
 
 // Modal con detalle de una alerta/medición
 function AlertDetailModal({ alerta, onClose }) {
+  const navigate = useNavigate();
+  const { puntos } = usePuntos();
   if (!alerta) return null;
   const nivel = alerta.nivel_corrosion ?? 0;
   const color = nivelColor(nivel);
-  const punto = alerta.punto_info ?? {};
+  // Las mediciones no traen punto_info anidado; se cruza con /puntos para la empresa
+  const puntoCompleto = puntos.find(p => p.id_punto === alerta.id_punto) ?? {};
+  const punto = {
+    sede: alerta.sede ?? puntoCompleto.sede,
+    ciudad: alerta.ciudad ?? puntoCompleto.ciudad,
+    empresa: puntoCompleto.empresa,
+  };
 
   return (
     <div style={{
@@ -62,9 +72,23 @@ function AlertDetailModal({ alerta, onClose }) {
         </div>
 
         {alerta.notas && (
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', background: 'var(--bg-inset)', padding: '10px 12px', borderRadius: 6 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', background: 'var(--bg-inset)', padding: '10px 12px', borderRadius: 6, marginBottom: 12 }}>
             {alerta.notas}
           </div>
+        )}
+
+        {alerta.id_medicion && (
+          <button
+            onClick={() => navigate(`/galeria/${alerta.id_medicion}`)}
+            style={{
+              width: '100%', padding: '10px', background: color,
+              border: 'none', borderRadius: 8, color: 'white',
+              fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Ir a la imagen →
+          </button>
         )}
 
         <div style={{ marginTop: 12, fontSize: 10, color: 'var(--text-faint)', fontFamily: 'var(--font-data)' }}>
@@ -187,9 +211,8 @@ function AlertCard({ alerta, index, onClick }) {
   const color = nivelColor(nivel);
   const bg = nivelBg(nivel);
   const isSevere = nivel === 3;
-  const punto = alerta.punto_info ?? {};
-  const sede = punto.sede ?? alerta.id_punto ?? '—';
-  const ciudad = punto.ciudad ?? '';
+  const sede = alerta.sede ?? alerta.id_punto ?? '—';
+  const ciudad = alerta.ciudad ?? '';
   const fecha = alerta.timestamp
     ? new Date(alerta.timestamp).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
     : '—';
