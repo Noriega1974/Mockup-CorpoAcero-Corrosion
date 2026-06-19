@@ -6,6 +6,7 @@ import ColombiaMap from '../components/ColombiaMap';
 import PlantDetail from '../components/PlantDetail';
 import AlertsPanel from '../components/AlertsPanel';
 import ChartsRow from '../components/ChartsRow';
+import { usePuntos } from '../hooks/usePuntos';
 
 // Leaflet vía CDN — compartido con ColombiaMap
 function useLeaflet() {
@@ -23,6 +24,7 @@ function useLeaflet() {
 export default function DashboardPage() {
   const [selectedPunto, setSelectedPunto] = useState(null);
   const leafletReady = useLeaflet();
+  const { puntos } = usePuntos();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
@@ -80,6 +82,31 @@ export default function DashboardPage() {
                 Mapa de instalaciones
               </span>
             </div>
+
+            {/* Lista rápida de sedes — evita buscar el punto a mano en el mapa */}
+            {puntos.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flexShrink: 0 }}>
+                {puntos.map(p => {
+                  const isSelected = selectedPunto?.id_punto === p.id_punto;
+                  return (
+                    <button
+                      key={p.id_punto}
+                      onClick={() => setSelectedPunto(p)}
+                      style={{
+                        padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
+                        fontFamily: 'var(--font-ui)', fontSize: 11, fontWeight: 600,
+                        border: isSelected ? '1px solid var(--accent-blue)' : '1px solid var(--border)',
+                        background: isSelected ? 'var(--accent-blue)' : 'var(--bg-card)',
+                        color: isSelected ? 'white' : 'var(--text-muted)',
+                      }}
+                    >
+                      {p.sede || p.clave_logica || p.id_punto}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div style={{ flex: 1, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', minHeight: 0 }}>
               {leafletReady ? (
                 <ColombiaMap selectedPunto={selectedPunto} onSelectPunto={setSelectedPunto} />
