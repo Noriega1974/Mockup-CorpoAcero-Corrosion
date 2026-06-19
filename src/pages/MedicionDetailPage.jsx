@@ -145,6 +145,71 @@ export default function MedicionDetailPage() {
     link.click();
   }
 
+  // Descarga la vista activa (original/detección/segmentación) quemando el overlay sobre la imagen
+  const [descargandoVista, setDescargandoVista] = useState(false);
+  async function handleDescargarVistaActual() {
+    if (!medicion?.url_imagen) return;
+    if (activeTab === 'original') return handleDescargar();
+
+    setDescargandoVista(true);
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = medicion.url_imagen;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      if (activeTab === 'deteccion') {
+        (medicion.detecciones ?? []).forEach(det => {
+          const w = det.w * canvas.width;
+          const h = det.h * canvas.height;
+          const x = det.x * canvas.width - w / 2;
+          const y = det.y * canvas.height - h / 2;
+          ctx.strokeStyle = '#dc2626';
+          ctx.lineWidth = Math.max(2, canvas.width * 0.003);
+          ctx.strokeRect(x, y, w, h);
+          ctx.fillStyle = '#dc2626';
+          ctx.font = `${Math.max(12, Math.round(canvas.width * 0.02))}px monospace`;
+          const etiqueta = `${det.clase ?? 'corrosion'} ${det.confianza ? (det.confianza * 100).toFixed(0) + '%' : ''}`.trim();
+          ctx.fillText(etiqueta, x + 4, Math.max(12, y - 6));
+        });
+      } else if (activeTab === 'segmentacion') {
+        (medicion.mascaras ?? []).forEach(({ puntos = [], color = '#dc2626', opacidad = 0.45 }) => {
+          if (puntos.length < 3) return;
+          ctx.beginPath();
+          ctx.moveTo(puntos[0].x * canvas.width, puntos[0].y * canvas.height);
+          puntos.slice(1).forEach(p => ctx.lineTo(p.x * canvas.width, p.y * canvas.height));
+          ctx.closePath();
+          ctx.fillStyle = color + Math.round(opacidad * 255).toString(16).padStart(2, '0');
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(1.5, canvas.width * 0.002);
+          ctx.stroke();
+        });
+      }
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `medicion-${idMedicion}-${activeTab}.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('No se pudo generar la descarga de esta vista. Probá de nuevo en unos minutos.');
+    } finally {
+      setDescargandoVista(false);
+    }
+  }
+
   async function handleCompartir() {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -245,7 +310,8 @@ export default function MedicionDetailPage() {
         alignItems: 'start',
       }}>
 
-        {/* ── Columna izquierda: imagen con tabs ── */}
+        {/* ── Columna izquierda: imagen con tabs + secciones que antes iban a la derecha ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
           {/* Tabs */}
           <div style={{
@@ -308,7 +374,94 @@ export default function MedicionDetailPage() {
           </div>
         </div>
 
-        {/* ── Columna derecha: metadata + acciones ── */}
+          {/* Notas */}
+          {medicion.notas && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
+              <SectionTitle>Notas</SectionTitle>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--font-ui)' }}>
+                {medicion.notas}
+              </p>
+            </div>
+          )}
+
+          {/* Mapa */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
+            <SectionTitle>Ubicación</SectionTitle>
+            <MiniMapa
+              lat={lat}
+              lng={lng}
+              latReal={medicion.latitud_real}
+              lngReal={medicion.longitud_real}
+            />
+            {lat && lng && (
+              <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-faint)', fontFamily: 'var(--font-data)', display: 'flex', gap: 12 }}>
+                <span style={{ color: '#1432A3' }}>● Planta: {lat?.toFixed(5)}, {lng?.toFixed(5)}</span>
+                {medicion.latitud_real && medicion.longitud_real && (
+                  <span style={{ color: '#38bdf8' }}>● Foto: {medicion.latitud_real.toFixed(5)}, {medicion.longitud_real.toFixed(5)}</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Acciones */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
+            <SectionTitle>Acciones</SectionTitle>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+              <ActionButton icon={<Download size={15} />} onClick={handleDescargarVistaActual} disabled={!medicion.url_imagen || descargandoVista}>
+                {descargandoVista ? 'Generando…' : `Descargar vista actual (${TABS.find(t => t.key === activeTab)?.label})`}
+              </ActionButton>
+
+              <ActionButton icon={<Share2 size={15} />} onClick={handleCompartir}>
+                {shareMsg || 'Copiar enlace'}
+              </ActionButton>
+
+              <ActionButton
+                icon={<MapPin size={15} />}
+                onClick={() => navigate(`/dashboard?punto=${medicion.id_punto}`)}
+              >
+                Ver planta en dashboard
+              </ActionButton>
+
+              {/* Eliminar: solo admins, placeholder */}
+              {isAdmin && (
+                <>
+                  <ActionButton
+                    icon={<Trash2 size={15} />}
+                    danger
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    Eliminar medición
+                  </ActionButton>
+
+                  {showDeleteConfirm && (
+                    <div style={{
+                      padding: '12px 14px',
+                      background: 'rgba(220,38,38,0.08)',
+                      border: '1px solid rgba(220,38,38,0.3)',
+                      borderRadius: 8, fontSize: 12,
+                      color: 'var(--text-secondary)', lineHeight: 1.5,
+                    }}>
+                      Eliminación no implementada todavía. Esta acción estará disponible en la siguiente iteración.
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        style={{
+                          display: 'block', marginTop: 8, background: 'transparent',
+                          border: '1px solid var(--border)', borderRadius: 5, padding: '4px 10px',
+                          cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)',
+                        }}
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Columna derecha: metadata ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Badge de nivel grande */}
@@ -381,92 +534,6 @@ export default function MedicionDetailPage() {
               </div>
             </div>
           )}
-
-          {/* Notas */}
-          {medicion.notas && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
-              <SectionTitle>Notas</SectionTitle>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--font-ui)' }}>
-                {medicion.notas}
-              </p>
-            </div>
-          )}
-
-          {/* Mapa */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
-            <SectionTitle>Ubicación</SectionTitle>
-            <MiniMapa
-              lat={lat}
-              lng={lng}
-              latReal={medicion.latitud_real}
-              lngReal={medicion.longitud_real}
-            />
-            {lat && lng && (
-              <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-faint)', fontFamily: 'var(--font-data)', display: 'flex', gap: 12 }}>
-                <span style={{ color: '#1432A3' }}>● Planta: {lat?.toFixed(5)}, {lng?.toFixed(5)}</span>
-                {medicion.latitud_real && medicion.longitud_real && (
-                  <span style={{ color: '#38bdf8' }}>● Foto: {medicion.latitud_real.toFixed(5)}, {medicion.longitud_real.toFixed(5)}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Acciones */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 20px' }}>
-            <SectionTitle>Acciones</SectionTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-
-              <ActionButton icon={<Download size={15} />} onClick={handleDescargar} disabled={!medicion.url_imagen}>
-                Descargar imagen original
-              </ActionButton>
-
-              <ActionButton icon={<Share2 size={15} />} onClick={handleCompartir}>
-                {shareMsg || 'Copiar enlace'}
-              </ActionButton>
-
-              <ActionButton
-                icon={<MapPin size={15} />}
-                onClick={() => navigate(`/dashboard?punto=${medicion.id_punto}`)}
-              >
-                Ver planta en dashboard
-              </ActionButton>
-
-              {/* Eliminar: solo admins, placeholder */}
-              {isAdmin && (
-                <>
-                  <ActionButton
-                    icon={<Trash2 size={15} />}
-                    danger
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    Eliminar medición
-                  </ActionButton>
-
-                  {showDeleteConfirm && (
-                    <div style={{
-                      padding: '12px 14px',
-                      background: 'rgba(220,38,38,0.08)',
-                      border: '1px solid rgba(220,38,38,0.3)',
-                      borderRadius: 8, fontSize: 12,
-                      color: 'var(--text-secondary)', lineHeight: 1.5,
-                    }}>
-                      Eliminación no implementada todavía. Esta acción estará disponible en la siguiente iteración.
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        style={{
-                          display: 'block', marginTop: 8, background: 'transparent',
-                          border: '1px solid var(--border)', borderRadius: 5, padding: '4px 10px',
-                          cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)',
-                        }}
-                      >
-                        Cerrar
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
